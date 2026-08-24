@@ -1,0 +1,842 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ASP - Ambakers Stigmatized Property</title>
+    <link href="https://fonts.googleapis.com/css2?family=Press+Start+2P&display=swap" rel="stylesheet">
+    <style>
+        * { box-sizing: border-box; }
+        body, html {
+            width: 100vw; height: 100vh; margin: 0; padding: 0;
+            background-color: #000; color: #00ff00;
+            font-family: 'Press Start 2P', monospace; user-select: none; overflow: hidden;
+        }
+        #game-container {
+            position: relative; width: 100vw; height: 100vh; background: #000;
+            display: flex; justify-content: center; align-items: center; overflow: hidden;
+        }
+        #viewport-wrapper { position: relative; display: inline-block; max-width: 95vw; max-height: 90vh; }
+        #viewport {
+            max-width: 95vw; max-height: 90vh; width: auto; height: auto;
+            object-fit: contain; display: block; border: 2px solid #222; box-shadow: 0 0 15px rgba(0,0,0,0.9);
+        }
+        .overlay-screen {
+            position: absolute; top: 0; left: 0; width: 100%; height: 100%;
+            background: #050505; z-index: 100; display: flex; flex-direction: column;
+            justify-content: center; align-items: center; padding: 40px; text-align: center;
+        }
+        .btn-pixel {
+            background: #111; color: #00ff00; border: 3px solid #00ff00;
+            padding: 12px 20px; font-family: 'Press Start 2P', monospace; font-size: 10px;
+            cursor: pointer; margin: 5px; box-shadow: 4px 4px 0px #005500; transition: all 0.1s;
+        }
+        .btn-pixel:hover { background: #00ff00; color: #000; box-shadow: 2px 2px 0px #003300; }
+        .btn-pixel:active { transform: translate(2px, 2px); box-shadow: 0px 0px 0px; }
+        .btn-danger { color: #ff3333; border-color: #ff3333; box-shadow: 4px 4px 0px #550000; }
+        .btn-danger:hover { background: #ff3333; color: #000; }
+
+        .hud-element {
+            position: absolute; z-index: 20; background: rgba(0, 0, 0, 0.75);
+            border: 2px solid #00ff00; padding: 12px 18px; font-size: 12px;
+            text-shadow: 2px 2px #000; box-shadow: 3px 3px 0px #003300;
+        }
+        #hud-top-left { top: 20px; left: 20px; }
+        #hud-top-right { top: 20px; right: 20px; text-align: right; color: #ff3333; border-color: #ff3333; box-shadow: 3px 3px 0px #550000; }
+        
+        .nav-btn {
+            position: absolute; top: 50%; transform: translateY(-50%);
+            background: rgba(0, 0, 0, 0.8); color: #00ff00; border: 3px solid #00ff00;
+            font-family: 'Press Start 2P', monospace; font-size: 24px; padding: 20px 15px;
+            cursor: pointer; z-index: 20; box-shadow: 4px 4px 0px #003300;
+        }
+        .nav-btn:hover { background: #00ff00; color: #000; }
+        #btn-prev { left: 20px; } #btn-next { right: 20px; }
+
+        #hitbox { 
+            position: absolute; 
+            display: none; 
+            cursor: crosshair; 
+            z-index: 10; 
+            border: none; 
+            background: transparent; 
+        }
+        #progress-ring { position: absolute; pointer-events: none; display: none; transform: translate(-50%, -50%); z-index: 30; }
+
+        #report-screen {
+            position: absolute; top: 0; left: 0; width: 100%; height: 100%;
+            background: #000; color: #00ff00; display: none; flex-direction: column;
+            justify-content: center; align-items: center; z-index: 200; font-size: 14px; line-height: 2; text-align: center;
+        }
+        #danger-warning {
+            position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%);
+            background: rgba(255, 0, 0, 0.85); color: #ffffff; border: 3px solid #ff0000;
+            padding: 20px 30px; font-size: 14px; text-align: center; z-index: 150; display: none; box-shadow: 0 0 20px #ff0000; pointer-events: none;
+        }
+        #witch-hour-overlay {
+            position: fixed; top: 50%; left: 50%; transform: translate(-50%, -50%);
+            color: #ff0000; font-size: 24px; font-weight: bold;
+            font-family: 'Press Start 2P', monospace; text-shadow: 0 0 20px rgba(255, 0, 0, 0.8);
+            pointer-events: none; z-index: 999; opacity: 0; transition: opacity 1s ease-in-out;
+            text-align: center; line-height: 1.8;
+        }
+        #nothing-found-text {
+            position: absolute; bottom: 80px; left: 50%; transform: translateX(-50%);
+            color: #ff3333; font-size: 14px; background: rgba(0,0,0,0.85);
+            border: 2px solid #ff3333; padding: 10px 20px; z-index: 160; display: none;
+            box-shadow: 0 0 10px #ff0000; pointer-events: none;
+        }
+
+        /* DEV MODE STYLING */
+        #screen-dev {
+            position: absolute; top: 0; left: 0; width: 100%; height: 100%;
+            background: #080808; color: #00ffff; display: none; flex-direction: column;
+            align-items: center; z-index: 300; padding: 10px; font-family: 'Press Start 2P', monospace;
+        }
+        #dev-controls {
+            background: #111; border: 2px solid #00ffff; padding: 10px; margin-bottom: 5px; width: 95%;
+            display: flex; justify-content: space-between; align-items: center; font-size: 9px;
+        }
+        #dev-canvas-area {
+            position: relative; display: inline-block; border: 2px solid #00ffff; cursor: crosshair;
+            user-select: none;
+        }
+        #dev-img { max-width: 75vw; max-height: 55vh; display: block; pointer-events: none; }
+        #dev-box-draw {
+            position: absolute; border: 2px dashed #ff00ff; background: rgba(255, 0, 255, 0.3);
+            pointer-events: none; display: none; z-index: 15;
+        }
+        #dev-saved-box {
+            position: absolute; border: 2px solid #00ff00; background: rgba(0, 255, 0, 0.35);
+            pointer-events: none; display: none; z-index: 10;
+        }
+        #dev-status {
+            font-size: 9px; color: #00ff00; margin: 4px 0; height: 12px; font-weight: bold;
+        }
+        #dev-output {
+            margin-top: 5px; width: 95%; height: 70px; background: #000; color: #00ff00;
+            border: 1px solid #00ffff; font-size: 8px; padding: 5px; overflow-y: auto; white-space: pre-wrap;
+        }
+    </style>
+</head>
+<body>
+
+    <!-- SCREEN 1: LOBBY -->
+    <div id="screen-menu" class="overlay-screen">
+        <h1 style="color: #ff3333; font-size: 18px; margin-bottom: 20px;">ASP: AMBAKERS STIGMATIZED PROPERTY</h1>
+        <p style="color: #888; font-size: 10px; margin-bottom: 30px;">[ SYSTEM READY ]</p>
+        <div>
+            <button class="btn-pixel" onclick="selectDifficulty('normal')">NORMAL MODE</button>
+            <button class="btn-pixel btn-danger" onclick="selectDifficulty('hard')">HARD MODE</button>
+        </div>
+        <button class="btn-pixel" style="border-color: #00ffff; color: #00ffff; margin-top: 25px;" onclick="accessDevMode()">[ DEV MODE (HITBOX MAKER) ]</button>
+    </div>
+
+    <!-- SCREEN 2: TUTORIAL -->
+    <div id="screen-tutorial" class="overlay-screen" style="display: none;">
+        <div id="typewriter-text" style="font-size: 10px; line-height: 2; color: #00ff00; max-width: 800px; text-align: left;"></div>
+        <button id="btn-start-game" class="btn-pixel" style="display: none; margin-top: 30px;">INITIALIZE MONITORING</button>
+    </div>
+
+    <!-- SCREEN 3: DEV MODE EDITOR -->
+    <div id="screen-dev">
+        <div id="dev-controls">
+            <div>
+                PILIH ANOMALI: 
+                <select id="dev-select-anomaly" style="background:#000; color:#00ffff; font-family:'Press Start 2P'; padding:5px; font-size:9px; border:1px solid #00ffff;"></select>
+            </div>
+            <div>
+                <button class="btn-pixel" onclick="copyDevData()" style="border-color:#00ffff; color:#00ffff; padding:5px 10px;">COPY ALL JSON DATA</button>
+                <button class="btn-pixel btn-danger" onclick="closeDevMode()" style="padding:5px 10px;">EXIT DEV</button>
+            </div>
+        </div>
+
+        <div id="dev-status">Tarik kotak di atas gambar untuk menentukan area hitbox</div>
+
+        <div id="dev-canvas-area">
+            <img id="dev-img" src="" alt="Dev Anomaly" draggable="false">
+            <div id="dev-saved-box"></div>
+            <div id="dev-box-draw"></div>
+        </div>
+
+        <textarea id="dev-output" readonly placeholder="Hasil JSON data..."></textarea>
+    </div>
+
+    <!-- GAMEPLAY CONTAINER -->
+    <div id="game-container">
+        <div id="hud-top-left" class="hud-element"><span id="cam-name">CAM 01 - LIVING ROOM</span></div>
+        <div id="hud-top-right" class="hud-element">
+            <div id="time-display">12:00:00 AM</div>
+            <div style="font-size: 8px; margin-top: 5px; color: #aaa;">STRIKES: <span id="strike-count" style="color: #ff0000;">0/5</span></div>
+        </div>
+
+        <div id="viewport-wrapper">
+            <img id="viewport" src="" alt="CCTV View">
+            <div id="hitbox"></div>
+        </div>
+
+        <button class="nav-btn" id="btn-prev">&lt;</button>
+        <button class="nav-btn" id="btn-next">&gt;</button>
+
+        <div id="hud-bottom-left" style="position: absolute; bottom: 20px; left: 20px; z-index: 20;">
+            <button class="btn-pixel" id="btn-nv">NV [OFF] (W)</button>
+        </div>
+
+        <svg id="progress-ring" width="60" height="60">
+            <circle stroke="#00ff00" stroke-width="4" fill="transparent" r="22" cx="30" cy="30" style="stroke-dasharray: 140; stroke-dashoffset: 140; transition: stroke-dashoffset 0.1s linear;"/>
+        </svg>
+
+        <div id="report-screen">
+            <div>REPORT IN PROGRESS...</div>
+            <div style="font-size: 10px; color: #888; margin-top: 15px;">PLEASE WAIT...</div>
+        </div>
+
+        <div id="danger-warning"><div id="danger-text"></div></div>
+        <div id="nothing-found-text"></div>
+        <div id="witch-hour-overlay">⚠️ WITCH HOUR HAS BEGUN ⚠️<br><span style="font-size: 10px; color: #fff;">ANOMALY ACTIVITY FREQUENCY DOUBLED</span></div>
+    </div>
+
+    <script>
+        // ==========================================
+        // MANAJEMEN AUDIO ENGINE
+        // ==========================================
+        class AudioManager {
+            constructor() {
+                this.mechanics = {
+                    bell: new Audio('sounds/Mechanic/Bell.mp3'),
+                    nvOn: new Audio('sounds/Mechanic/NV_ON.mp3'),
+                    nvOff: new Audio('sounds/Mechanic/NV_OFF.mp3'),
+                    report: new Audio('sounds/Mechanic/Report.mp3'),
+                    typing: new Audio('sounds/Mechanic/Typing.mp3')
+                };
+
+                // KONTROL VOLUME (PERBAIKAN VOLUME)
+                this.mechanics.report.volume = 0.33; // 3 kali lebih kecil
+                this.mechanics.bell.volume = 0.50;   // 2 kali lebih kecil
+
+                this.soundEffects = [
+                    'sounds/Sound_effect/Door_Open.mp3',
+                    'sounds/Sound_effect/Door_Slam.mp3',
+                    'sounds/Sound_effect/Footstep.mp3',
+                    'sounds/Sound_effect/Knock.mp3',
+                    'sounds/Sound_effect/Object_Drop.mp3',
+                    'sounds/Sound_effect/Running_Footstep.mp3',
+                    'sounds/Sound_effect/Slide.mp3',
+                    'sounds/Sound_effect/Growl.mp3',
+                    'sounds/Sound_effect/Dying.mp3',
+                    'sounds/Sound_effect/Suffocated.mp3',
+                    'sounds/Sound_effect/Baby.mp3'
+                ];
+
+                this.mechanics.typing.loop = true;
+                this.ambienceTimer = null;
+            }
+
+            playNV(isOn) {
+                const sound = isOn ? this.mechanics.nvOn : this.mechanics.nvOff;
+                sound.currentTime = 0;
+                sound.play().catch(e => console.log(e));
+            }
+
+            playBell() {
+                this.mechanics.bell.currentTime = 0;
+                this.mechanics.bell.play().catch(e => console.log(e));
+            }
+
+            startReportSound() {
+                this.mechanics.report.currentTime = 0;
+                this.mechanics.report.play().catch(e => console.log(e));
+            }
+
+            stopReportSound() {
+                this.mechanics.report.pause();
+                this.mechanics.report.currentTime = 0;
+            }
+
+            typeWriter(element, text, speed = 20, onComplete = null) {
+                element.innerText = "";
+                let i = 0;
+                
+                this.mechanics.typing.currentTime = 0;
+                this.mechanics.typing.play().catch(e => console.log(e));
+
+                const timer = setInterval(() => {
+                    element.innerText += text.charAt(i);
+                    i++;
+                    if (i >= text.length) {
+                        clearInterval(timer);
+                        this.mechanics.typing.pause();
+                        this.mechanics.typing.currentTime = 0;
+                        if (onComplete) onComplete();
+                    }
+                }, speed);
+            }
+
+            startAmbience(intervalMs = 100000) {
+                const schedule = () => {
+                    const delay = intervalMs * (2 + Math.random() * 2);
+                    this.ambienceTimer = setTimeout(() => {
+                        this.playRandomSFX();
+                        schedule();
+                    }, delay);
+                };
+                schedule();
+            }
+
+            stopAmbience() {
+                if (this.ambienceTimer) clearTimeout(this.ambienceTimer);
+            }
+
+            playRandomSFX() {
+                const idx = Math.floor(Math.random() * this.soundEffects.length);
+                const sfx = new Audio(this.soundEffects[idx]);
+                sfx.volume = 0.5;
+                sfx.play().catch(e => console.log(e));
+            }
+        }
+
+        const audioManager = new AudioManager();
+
+        // ==========================================
+        // DATA RUANG & ANOMALI HASIL EDITING HITBOX
+        // ==========================================
+        const ROOMS = [
+            { id: 1, name: "CAM 01 - LIVING ROOM", normalImg: "image/ruang1_normal.jpeg" },
+            { id: 2, name: "CAM 02 - TOILET", normalImg: "image/ruang2_normal.png" },
+            { id: 3, name: "CAM 03 - STORAGE", normalImg: "image/ruang3_normal.png" },
+            { id: 4, name: "CAM 04 - KITCHEN", normalImg: "image/ruang4_normal.jpeg" },
+            { id: 5, name: "CAM 05 - BEDROOM 1", normalImg: "image/ruang5_normal.jpeg" },
+            { id: 6, name: "CAM 06 - WORKSPACE", normalImg: "image/ruang6_normal.jpeg" }
+        ];
+
+        const ANOMALY_POOL = [
+            { "id": "r1_a1", "roomId": 1, "imageSrc": "image/ruang1_anomali1.jpe", "isNVOnly": false, "hitbox": { "top": "3.48%", "left": "9.92%", "width": "44.06%", "height": "28.46%" } },
+            { "id": "r1_a2", "roomId": 1, "imageSrc": "image/ruang1_anomali2.jpe", "isNVOnly": false, "hitbox": { "top": "41.52%", "left": "30.57%", "width": "12.35%", "height": "30.18%" } },
+            { "id": "r1_a3", "roomId": 1, "imageSrc": "image/ruang1_anomali3.jpe", "isNVOnly": false, "hitbox": { "top": "59.67%", "left": "81.63%", "width": "8.85%", "height": "12.51%" } },
+            { "id": "r1_a4", "roomId": 1, "imageSrc": "image/ruang1_anomali4.jpe", "isNVOnly": false, "hitbox": { "top": "30.23%", "left": "69.83%", "width": "13.09%", "height": "8.34%" } },
+            { "id": "r1_a5", "roomId": 1, "imageSrc": "image/ruang1_anomali5.jpe", "isNVOnly": false, "hitbox": { "top": "34.40%", "left": "8.63%", "width": "25.44%", "height": "44.90%" } },
+            { "id": "r1_a6", "roomId": 1, "imageSrc": "image/ruang1_anomali6.jpe", "isNVOnly": false, "hitbox": { "top": "51.33%", "left": "64.30%", "width": "8.11%", "height": "8.59%" } },
+            { "id": "r1_a7", "roomId": 1, "imageSrc": "image/ruang1_anomali7.jpe", "isNVOnly": false, "hitbox": { "top": "55.26%", "left": "27.80%", "width": "61.20%", "height": "45.14%" } },
+            { "id": "r1_a8", "roomId": 1, "imageSrc": "image/ruang1_anomali8.jpe", "isNVOnly": false, "hitbox": { "top": "43.23%", "left": "42.55%", "width": "8.48%", "height": "15.95%" } },
+            { "id": "r1_a9", "roomId": 1, "imageSrc": "image/ruang1_anomali9.jpe", "isNVOnly": true,  "hitbox": { "top": "20.66%", "left": "59.88%", "width": "40.19%", "height": "79.25%" } },
+            { "id": "r2_a1", "roomId": 2, "imageSrc": "image/ruang2_anomali1.jpe", "isNVOnly": false, "hitbox": { "top": "30.72%", "left": "58.77%", "width": "15.48%", "height": "51.53%" } },
+            { "id": "r2_a2", "roomId": 2, "imageSrc": "image/ruang2_anomali2.jpe", "isNVOnly": false, "hitbox": { "top": "66.05%", "left": "10.84%", "width": "27.84%", "height": "34.34%" } },
+            { "id": "r2_a3", "roomId": 2, "imageSrc": "image/ruang2_anomali3.jpe", "isNVOnly": false, "hitbox": { "top": "90.84%", "left": "33.33%", "width": "28.39%", "height": "9.56%" } },
+            { "id": "r2_a4", "roomId": 2, "imageSrc": "image/ruang2_anomali4.jpe", "isNVOnly": false, "hitbox": { "top": "0.78%",  "left": "0.34%",   "width": "98.81%", "height": "18.65%" } },
+            { "id": "r2_a5", "roomId": 2, "imageSrc": "image/ruang2_anomali5.png", "isNVOnly": false, "hitbox": { "top": "26.79%", "left": "58.22%", "width": "28.95%", "height": "57.91%" } },
+            { "id": "r2_a6", "roomId": 2, "imageSrc": "image/ruang2_anomali6.jpe", "isNVOnly": false, "hitbox": { "top": "67.28%", "left": "8.45%",   "width": "16.04%", "height": "12.51%" } },
+            { "id": "r2_a9", "roomId": 2, "imageSrc": "image/ruang2_anomali9.jpe", "isNVOnly": true,  "hitbox": { "top": "37.10%", "left": "21.90%", "width": "21.75%", "height": "57.91%" } },
+            { "id": "r3_a1", "roomId": 3, "imageSrc": "image/ruang3_anomali1.jpe", "isNVOnly": false, "hitbox": { "top": "54.28%", "left": "69.28%", "width": "9.03%",  "height": "12.76%" } },
+            { "id": "r3_a2", "roomId": 3, "imageSrc": "image/ruang3_anomali2.png", "isNVOnly": false, "hitbox": { "top": "15.75%", "left": "8.25%",   "width": "28.40%", "height": "47.36%" } },
+            { "id": "r3_a3", "roomId": 3, "imageSrc": "image/ruang3_anomali3.png", "isNVOnly": false, "hitbox": { "top": "56.24%", "left": "46.61%", "width": "22.68%", "height": "34.60%" } },
+            { "id": "r3_a9", "roomId": 3, "imageSrc": "image/ruang3_anomali9.jpe", "isNVOnly": true,  "hitbox": { "top": "52.31%", "left": "15.64%", "width": "24.70%", "height": "34.35%" } },
+            { "id": "r3_a10","roomId": 3, "imageSrc": "image/ruang3_anomali10.jpe","isNVOnly": true,  "hitbox": { "top": "33.17%", "left": "74.63%", "width": "17.51%", "height": "28.22%" } },
+            { "id": "r4_a1", "roomId": 4, "imageSrc": "image/ruang4_anomali1.jpe", "isNVOnly": false, "hitbox": { "top": "9.62%",  "left": "77.21%", "width": "22.12%", "height": "21.35%" } },
+            { "id": "r4_a2", "roomId": 4, "imageSrc": "image/ruang4_anomali2.jpe", "isNVOnly": false, "hitbox": { "top": "57.71%", "left": "20.25%", "width": "19.72%", "height": "41.47%" } },
+            { "id": "r4_a3", "roomId": 4, "imageSrc": "image/ruang4_anomali3.jpe", "isNVOnly": false, "hitbox": { "top": "45.20%", "left": "48.82%", "width": "17.14%", "height": "30.67%" } },
+            { "id": "r6_a1", "roomId": 6, "imageSrc": "image/ruang6_anomali1.jpe", "isNVOnly": false, "hitbox": { "top": "43.72%", "left": "52.69%", "width": "16.04%", "height": "16.69%" } },
+            { "id": "r6_a2", "roomId": 6, "imageSrc": "image/ruang6_anomali2.jpe", "isNVOnly": false, "hitbox": { "top": "26.79%", "left": "4.94%",   "width": "12.72%", "height": "16.44%" } },
+            { "id": "r6_a3", "roomId": 6, "imageSrc": "image/ruang6_anomali3.png", "isNVOnly": false, "hitbox": { "top": "60.66%", "left": "37.57%", "width": "32.64%", "height": "31.90%" } }
+        ];
+
+        // State Variables
+        let gameMode = 'normal';
+        let maxStrikes = 5;
+        let currentRoomIndex = 0;
+        let isNVActive = false;
+        let activeAnomalies = [];
+        let recentAnomalyIds = []; // MEMORI UNTUK CEGAH MUNCUL DUA KALI (7 SPOTS RECENT)
+        let strikes = 0;
+        let gameActive = false;
+        let isReporting = false;
+        let totalGameMs = 0;
+        let lastInGameHour = 0;
+        const MS_PER_INGAME_MINUTE = 4000;
+        const TOTAL_INGAME_MINUTES = 360;
+        const TOTAL_GAME_DURATION_MS = TOTAL_INGAME_MINUTES * MS_PER_INGAME_MINUTE;
+
+        // DOM Elements
+        const viewport = document.getElementById('viewport');
+        const camNameDisplay = document.getElementById('cam-name');
+        const timeDisplay = document.getElementById('time-display');
+        const strikeDisplay = document.getElementById('strike-count');
+        const btnNV = document.getElementById('btn-nv');
+        const hitbox = document.getElementById('hitbox');
+        const reportScreen = document.getElementById('report-screen');
+        const dangerWarning = document.getElementById('danger-warning');
+        const dangerText = document.getElementById('danger-text');
+        const nothingFoundText = document.getElementById('nothing-found-text');
+
+        // ==========================================
+        // DEV MODE LOGIC
+        // ==========================================
+        function accessDevMode() {
+            let pass = prompt("MASUKKAN PASSWORD DEV:");
+            if (pass === "frieren") {
+                document.getElementById('screen-menu').style.display = 'none';
+                document.getElementById('screen-dev').style.display = 'flex';
+                initDevMode();
+            } else if (pass !== null) {
+                alert("PASSWORD SALAH!");
+            }
+        }
+
+        function closeDevMode() {
+            document.getElementById('screen-dev').style.display = 'none';
+            document.getElementById('screen-menu').style.display = 'flex';
+        }
+
+        const devSelect = document.getElementById('dev-select-anomaly');
+        const devImg = document.getElementById('dev-img');
+        const devCanvas = document.getElementById('dev-canvas-area');
+        const devBoxDraw = document.getElementById('dev-box-draw');
+        const devSavedBox = document.getElementById('dev-saved-box');
+        const devOutput = document.getElementById('dev-output');
+        const devStatus = document.getElementById('dev-status');
+
+        let isDrawing = false;
+        let startX, startY;
+
+        function initDevMode() {
+            devSelect.innerHTML = "";
+            ANOMALY_POOL.forEach((a, idx) => {
+                let opt = document.createElement('option');
+                opt.value = idx;
+                opt.innerText = `${a.id} (Ruang ${a.roomId}) ${a.isNVOnly ? '[NV ONLY]' : ''}`;
+                devSelect.appendChild(opt);
+            });
+            loadDevImage();
+        }
+
+        devSelect.addEventListener('change', loadDevImage);
+
+        function loadDevImage() {
+            let selected = ANOMALY_POOL[devSelect.value];
+            devImg.src = selected.imageSrc;
+            devBoxDraw.style.display = 'none';
+            
+            if(selected.hitbox && selected.hitbox.width !== "100%") {
+                devSavedBox.style.top = selected.hitbox.top;
+                devSavedBox.style.left = selected.hitbox.left;
+                devSavedBox.style.width = selected.hitbox.width;
+                devSavedBox.style.height = selected.hitbox.height;
+                devSavedBox.style.display = 'block';
+                devStatus.innerText = `HITBOX TERPASANG UNTUK ${selected.id.toUpperCase()}`;
+            } else {
+                devSavedBox.style.display = 'none';
+                devStatus.innerText = `BELUM ADA HITBOX KHUSUS (DEFAULT FULL SCREEN)`;
+            }
+            updateOutputText();
+        }
+
+        devCanvas.addEventListener('mousedown', (e) => {
+            e.preventDefault();
+            isDrawing = true;
+            let rect = devCanvas.getBoundingClientRect();
+            startX = e.clientX - rect.left;
+            startY = e.clientY - rect.top;
+
+            devBoxDraw.style.left = `${startX}px`;
+            devBoxDraw.style.top = `${startY}px`;
+            devBoxDraw.style.width = `0px`;
+            devBoxDraw.style.height = `0px`;
+            devBoxDraw.style.display = 'block';
+        });
+
+        window.addEventListener('mousemove', (e) => {
+            if (!isDrawing) return;
+            let rect = devCanvas.getBoundingClientRect();
+            let currentX = e.clientX - rect.left;
+            let currentY = e.clientY - rect.top;
+
+            currentX = Math.max(0, Math.min(currentX, rect.width));
+            currentY = Math.max(0, Math.min(currentY, rect.height));
+
+            let width = currentX - startX;
+            let height = currentY - startY;
+
+            devBoxDraw.style.width = `${Math.abs(width)}px`;
+            devBoxDraw.style.height = `${Math.abs(height)}px`;
+            devBoxDraw.style.left = `${width < 0 ? currentX : startX}px`;
+            devBoxDraw.style.top = `${height < 0 ? currentY : startY}px`;
+        });
+
+        window.addEventListener('mouseup', (e) => {
+            if (!isDrawing) return;
+            isDrawing = false;
+
+            let rect = devCanvas.getBoundingClientRect();
+            let boxRect = devBoxDraw.getBoundingClientRect();
+
+            if (boxRect.width < 10 || boxRect.height < 10) {
+                devBoxDraw.style.display = 'none';
+                devStatus.innerText = "AREA TERLALU KECIL! TARIK KOTAK LEBIH BESAR.";
+                devStatus.style.color = "#ff3333";
+                return;
+            }
+
+            let topPercent = (((boxRect.top - rect.top) / rect.height) * 100).toFixed(2) + "%";
+            let leftPercent = (((boxRect.left - rect.left) / rect.width) * 100).toFixed(2) + "%";
+            let widthPercent = ((boxRect.width / rect.width) * 100).toFixed(2) + "%";
+            let heightPercent = ((boxRect.height / rect.height) * 100).toFixed(2) + "%";
+
+            let selected = ANOMALY_POOL[devSelect.value];
+            selected.hitbox = { top: topPercent, left: leftPercent, width: widthPercent, height: heightPercent };
+
+            devSavedBox.style.top = topPercent;
+            devSavedBox.style.left = leftPercent;
+            devSavedBox.style.width = widthPercent;
+            devSavedBox.style.height = heightPercent;
+            devSavedBox.style.display = 'block';
+            devBoxDraw.style.display = 'none';
+
+            devStatus.style.color = "#00ff00";
+            devStatus.innerText = `SAVED! Area: ${widthPercent} x ${heightPercent}`;
+
+            updateOutputText();
+        });
+
+        function updateOutputText() {
+            devOutput.value = JSON.stringify(ANOMALY_POOL, null, 4);
+        }
+
+        function copyDevData() {
+            devOutput.select();
+            document.execCommand('copy');
+            alert("SELURUH DATA HITBOX BERHASIL DISALIN!");
+        }
+
+        // ==========================================
+        // GAMEPLAY SYSTEM
+        // ==========================================
+        function selectDifficulty(mode) {
+            gameMode = mode;
+            maxStrikes = mode === 'hard' ? 3 : 5;
+            strikeDisplay.innerText = `0/${maxStrikes}`;
+            
+            document.getElementById('screen-menu').style.display = 'none';
+            document.getElementById('screen-tutorial').style.display = 'flex';
+            startTutorialText();
+        }
+
+        function startTutorialText() {
+            const text = `SYSTEM-PROTOCOL:\n\n1. MONITOR-CAM 01-TO-CAM 06.\n2. SURVIVE-FROM-12:00:00 AM-TO-06:00:00 AM.\n3. PRESS-'W'-TO-TOGGLE-NIGHT-VISION.\n4. SOME-ANOMALIES-ARE-ONLY-VISIBLE & REPORTABLE-VIA-NIGHT-VISION.\n5. HOLD-LEFT-CLICK-INSIDE-ANOMALY-AREA-TO-REPORT.\n6. MAXIMUM-ALLOWED-STRIKES: ${maxStrikes}.\n\nGOOD LUCK.`;
+            audioManager.typeWriter(document.getElementById('typewriter-text'), text, 20, () => {
+                document.getElementById('btn-start-game').style.display = 'inline-block';
+            });
+        }
+
+        document.getElementById('btn-start-game').addEventListener('click', () => {
+            document.getElementById('screen-tutorial').style.display = 'none';
+            gameActive = true;
+            isWitchHourNotified = false;
+            recentAnomalyIds = [];
+            updateCameraView();
+            startRealtimeClock();
+            
+            audioManager.startAmbience(30000);
+            
+            setTimeout(() => {
+                if (gameActive) {
+                    spawnAnomaly(); 
+                    scheduleNextAnomaly();
+                }
+            }, 30000);
+        });
+
+        function updateCameraView() {
+            let room = ROOMS[currentRoomIndex];
+            camNameDisplay.innerText = room.name;
+
+            const activeAnomaly = activeAnomalies.find(a => a.roomId === room.id);
+
+            if (activeAnomaly) {
+                if (activeAnomaly.isNVOnly && !isNVActive) {
+                    viewport.src = room.normalImg;
+                    hitbox.style.display = 'none';
+                } else {
+                    viewport.src = activeAnomaly.imageSrc;
+                    hitbox.style.display = 'block';
+                    if (activeAnomaly.hitbox) {
+                        hitbox.style.top = activeAnomaly.hitbox.top;
+                        hitbox.style.left = activeAnomaly.hitbox.left;
+                        hitbox.style.width = activeAnomaly.hitbox.width;
+                        hitbox.style.height = activeAnomaly.hitbox.height;
+                    }
+                }
+            } else {
+                viewport.src = room.normalImg;
+                hitbox.style.display = 'none';
+            }
+
+            if (isNVActive) {
+                viewport.style.filter = "sepia(100%) hue-rotate(90deg) saturate(300%) contrast(150%) brightness(80%)";
+            } else {
+                viewport.style.filter = "none";
+            }
+
+            checkDangerStatus();
+        }
+
+        let isDangerShowing = false;
+        function checkDangerStatus() {
+            if (activeAnomalies.length >= 3) {
+                if (!isDangerShowing) {
+                    isDangerShowing = true;
+                    dangerWarning.style.display = 'block';
+                    const warningMsg = "Too-much-anomalies!! You-were-in-danger";
+                    audioManager.typeWriter(dangerText, warningMsg, 40);
+                }
+            } else {
+                if (isDangerShowing) {
+                    isDangerShowing = false;
+                    dangerWarning.style.display = 'none';
+                    dangerText.innerText = "";
+                }
+            }
+        }
+
+        let lastTime = null;
+        function startRealtimeClock() {
+            lastTime = performance.now();
+            function updateClock(now) {
+                if (!gameActive) return;
+
+                let delta = now - lastTime;
+                lastTime = now;
+                totalGameMs += delta;
+
+                let totalInGameSeconds = (totalGameMs / MS_PER_INGAME_MINUTE) * 60;
+                let hours = Math.floor(totalInGameSeconds / 3600);
+                let mins = Math.floor((totalInGameSeconds % 3600) / 60);
+                let secs = Math.floor(totalInGameSeconds % 60);
+
+                if (hours > lastInGameHour && hours <= 6) {
+                    lastInGameHour = hours;
+                    audioManager.playBell();
+                }
+
+                let displayHour = hours === 0 ? 12 : hours;
+                let strH = displayHour < 10 ? `0${displayHour}` : `${displayHour}`;
+                let strM = mins < 10 ? `0${mins}` : `${mins}`;
+                let strS = secs < 10 ? `0${secs}` : `${secs}`;
+
+                timeDisplay.innerText = `${strH}:${strM}:${strS} AM`;
+
+                if (totalGameMs >= TOTAL_GAME_DURATION_MS) {
+                    gameActive = false;
+                    audioManager.stopAmbience();
+                    timeDisplay.innerText = "06:00:00 AM";
+                    alert("SURVIVED! YOU REACHED 06:00 AM.");
+                    return;
+                }
+
+                requestAnimationFrame(updateClock);
+            }
+            requestAnimationFrame(updateClock);
+        }
+
+        document.getElementById('btn-prev').addEventListener('click', () => {
+            if (isReporting) return;
+            currentRoomIndex = (currentRoomIndex - 1 + ROOMS.length) % ROOMS.length;
+            updateCameraView();
+        });
+
+        document.getElementById('btn-next').addEventListener('click', () => {
+            if (isReporting) return;
+            currentRoomIndex = (currentRoomIndex + 1) % ROOMS.length;
+            updateCameraView();
+        });
+
+        function toggleNV() {
+            if (isReporting || !gameActive) return;
+            isNVActive = !isNVActive;
+            audioManager.playNV(isNVActive);
+            btnNV.innerText = isNVActive ? "NV [ON] (W)" : "NV [OFF] (W)";
+            updateCameraView();
+        }
+
+        btnNV.addEventListener('click', toggleNV);
+
+        window.addEventListener('keydown', (e) => {
+            if (e.key === 'w' || e.key === 'W') {
+                toggleNV();
+            }
+        });
+
+        let isWitchHourNotified = false;
+        let anomalyTimer = null;
+
+        function scheduleNextAnomaly() {
+            if (!gameActive) return;
+
+            const isWitchHour = lastInGameHour >= 3;
+
+            if (isWitchHour && !isWitchHourNotified) {
+                showWitchHourWarning();
+                isWitchHourNotified = true;
+            }
+
+            let minDelay = 40000;
+            let maxDelay = 80000;
+
+            if (gameMode === 'hard') {
+                minDelay = 20000;
+                maxDelay = 40000;
+            }
+
+            if (isWitchHour) {
+                minDelay = minDelay / 2;
+                maxDelay = maxDelay / 2;
+            }
+
+            const randomDelay = Math.floor(Math.random() * (maxDelay - minDelay + 1)) + minDelay;
+
+            anomalyTimer = setTimeout(() => {
+                if (gameActive) {
+                    spawnAnomaly();
+                    scheduleNextAnomaly();
+                }
+            }, randomDelay);
+        }
+
+        function showWitchHourWarning() {
+            const warningEl = document.getElementById('witch-hour-overlay');
+            if (!warningEl) return;
+            warningEl.style.opacity = '1';
+            setTimeout(() => { warningEl.style.opacity = '0'; }, 4000);
+        }
+
+        function spawnAnomaly() {
+            if (!gameActive) return;
+            const currentRoom = ROOMS[currentRoomIndex];
+
+            // LOGIKA CEGAH ANOMALI SAMA MUNCUL BERULANG (7 ANOMALI RECENT RECORD)
+            const available = ANOMALY_POOL.filter(a => 
+                a.roomId !== currentRoom.id && 
+                !activeAnomalies.some(act => act.roomId === a.roomId) &&
+                !recentAnomalyIds.includes(a.id)
+            );
+
+            if (available.length > 0) {
+                const chosen = available[Math.floor(Math.random() * available.length)];
+                activeAnomalies.push(chosen);
+
+                recentAnomalyIds.push(chosen.id);
+                if (recentAnomalyIds.length > 7) {
+                    recentAnomalyIds.shift(); // Hapus yang tertua
+                }
+
+                updateCameraView();
+            }
+        }
+
+        // REPORT SYSTEM
+        let holdTimer = null;
+        let holdProgress = 140;
+        let isClickingHitbox = false;
+        const progressRing = document.getElementById('progress-ring');
+        const circle = progressRing.querySelector('circle');
+
+        function startHold(e, targetIsHitbox) {
+            if (!gameActive || isReporting) return;
+
+            isClickingHitbox = targetIsHitbox;
+            progressRing.style.display = 'block';
+            progressRing.style.left = `${e.clientX}px`;
+            progressRing.style.top = `${e.clientY}px`;
+            holdProgress = 140;
+            circle.style.strokeDashoffset = holdProgress;
+
+            holdTimer = setInterval(() => {
+                holdProgress -= 14;
+                circle.style.strokeDashoffset = holdProgress;
+
+                if (holdProgress <= 0) {
+                    clearInterval(holdTimer);
+                    processReport();
+                }
+            }, 100);
+        }
+
+        hitbox.addEventListener('mousedown', (e) => {
+            e.stopPropagation();
+            startHold(e, true);
+        });
+
+        viewport.addEventListener('mousedown', (e) => {
+            startHold(e, false);
+        });
+
+        window.addEventListener('mouseup', cancelHold);
+
+        function cancelHold() {
+            if (holdTimer) clearInterval(holdTimer);
+            progressRing.style.display = 'none';
+        }
+
+        function showNothingFoundMessage() {
+            nothingFoundText.style.display = 'block';
+            audioManager.typeWriter(nothingFoundText, "Nothing Found...", 30, () => {
+                setTimeout(() => {
+                    nothingFoundText.style.display = 'none';
+                    nothingFoundText.innerText = "";
+                    isReporting = false;
+                }, 1000);
+            });
+        }
+
+        function processReport() {
+            cancelHold();
+            isReporting = true;
+
+            const currentRoom = ROOMS[currentRoomIndex];
+            const anomalyIndex = activeAnomalies.findIndex(a => a.roomId === currentRoom.id);
+
+            let isCorrectReport = false;
+
+            if (anomalyIndex !== -1 && isClickingHitbox) {
+                const anomaly = activeAnomalies[anomalyIndex];
+                if (!anomaly.isNVOnly || (anomaly.isNVOnly && isNVActive)) {
+                    isCorrectReport = true;
+                }
+            }
+
+            // JIKA LAPORAN BENAR: TAMPILKAN LAYAR HITAM "REPORT IN PROGRESS"
+            if (isCorrectReport) {
+                reportScreen.style.display = 'flex';
+                audioManager.startReportSound();
+
+                setTimeout(() => {
+                    audioManager.stopReportSound();
+                    activeAnomalies.splice(anomalyIndex, 1);
+                    strikes = 0;
+                    strikeDisplay.innerText = `0/${maxStrikes}`;
+                    updateCameraView();
+
+                    setTimeout(() => {
+                        reportScreen.style.display = 'none';
+                        isReporting = false;
+                    }, 300);
+
+                }, 1200);
+            } 
+            // JIKA LAPORAN SALAH: TANPA SCREEN REPORT, TAMPILKAN "NOTHING FOUND..."
+            else {
+                strikes++;
+                strikeDisplay.innerText = `${strikes}/${maxStrikes}`;
+                
+                if (strikes >= maxStrikes) {
+                    gameActive = false;
+                    audioManager.stopAmbience();
+                    alert("GAME OVER: TOO-MANY-INCORRECT-REPORTS!");
+                    isReporting = false;
+                    return;
+                }
+
+                showNothingFoundMessage();
+            }
+        }
+    </script>
+</body>
+</html>
