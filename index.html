@@ -36,6 +36,22 @@
         .btn-danger { color: #ff3333; border-color: #ff3333; box-shadow: 4px 4px 0px #550000; }
         .btn-danger:hover { background: #ff3333; color: #000; }
 
+        /* ANIMASI & STYLING LOADING SCREEN */
+        .glitch-text {
+            font-size: 16px; color: #00ff00; text-shadow: 2px 2px #005500;
+            animation: pulseText 1.2s infinite alternate; margin-bottom: 25px;
+        }
+        @keyframes pulseText {
+            0% { opacity: 0.3; transform: scale(0.98); }
+            100% { opacity: 1; transform: scale(1.02); }
+        }
+        #loading-bar-container {
+            width: 300px; height: 20px; border: 2px solid #00ff00; padding: 2px; margin-top: 15px;
+        }
+        #loading-bar {
+            width: 0%; height: 100%; background: #00ff00; transition: width 0.2s ease-out;
+        }
+
         .hud-element {
             position: absolute; z-index: 20; background: rgba(0, 0, 0, 0.75);
             border: 2px solid #00ff00; padding: 12px 18px; font-size: 12px;
@@ -54,12 +70,8 @@
         #btn-prev { left: 20px; } #btn-next { right: 20px; }
 
         #hitbox { 
-            position: absolute; 
-            display: none; 
-            cursor: crosshair; 
-            z-index: 10; 
-            border: none; 
-            background: transparent; 
+            position: absolute; display: none; cursor: crosshair; 
+            z-index: 10; border: none; background: transparent; 
         }
         #progress-ring { position: absolute; pointer-events: none; display: none; transform: translate(-50%, -50%); z-index: 30; }
 
@@ -98,21 +110,16 @@
             display: flex; justify-content: space-between; align-items: center; font-size: 9px;
         }
         #dev-canvas-area {
-            position: relative; display: inline-block; border: 2px solid #00ffff; cursor: crosshair;
-            user-select: none;
+            position: relative; display: inline-block; border: 2px solid #00ffff; cursor: crosshair; user-select: none;
         }
         #dev-img { max-width: 75vw; max-height: 55vh; display: block; pointer-events: none; }
         #dev-box-draw {
-            position: absolute; border: 2px dashed #ff00ff; background: rgba(255, 0, 255, 0.3);
-            pointer-events: none; display: none; z-index: 15;
+            position: absolute; border: 2px dashed #ff00ff; background: rgba(255, 0, 255, 0.3); pointer-events: none; display: none; z-index: 15;
         }
         #dev-saved-box {
-            position: absolute; border: 2px solid #00ff00; background: rgba(0, 255, 0, 0.35);
-            pointer-events: none; display: none; z-index: 10;
+            position: absolute; border: 2px solid #00ff00; background: rgba(0, 255, 0, 0.35); pointer-events: none; display: none; z-index: 10;
         }
-        #dev-status {
-            font-size: 9px; color: #00ff00; margin: 4px 0; height: 12px; font-weight: bold;
-        }
+        #dev-status { font-size: 9px; color: #00ff00; margin: 4px 0; height: 12px; font-weight: bold; }
         #dev-output {
             margin-top: 5px; width: 95%; height: 70px; background: #000; color: #00ff00;
             border: 1px solid #00ffff; font-size: 8px; padding: 5px; overflow-y: auto; white-space: pre-wrap;
@@ -130,6 +137,16 @@
             <button class="btn-pixel btn-danger" onclick="selectDifficulty('hard')">HARD MODE</button>
         </div>
         <button class="btn-pixel" style="border-color: #00ffff; color: #00ffff; margin-top: 25px;" onclick="accessDevMode()">[ DEV MODE (HITBOX MAKER) ]</button>
+    </div>
+
+    <!-- SCREEN 1.5: LOADING SCREEN (NEW) -->
+    <div id="screen-loading" class="overlay-screen" style="display: none;">
+        <div class="glitch-text">ASP - Ambakers Stigmatized Property</div>
+        <div style="font-size: 10px; color: #888;">LOADING SYSTEM ASSETS...</div>
+        <div id="loading-bar-container">
+            <div id="loading-bar"></div>
+        </div>
+        <div id="loading-text" style="font-size: 9px; margin-top: 15px; color: #00ff00;">0%</div>
     </div>
 
     <!-- SCREEN 2: TUTORIAL -->
@@ -210,9 +227,8 @@
                     typing: new Audio('sounds/Mechanic/Typing.mp3')
                 };
 
-                // KONTROL VOLUME (PERBAIKAN VOLUME)
-                this.mechanics.report.volume = 0.33; // 3 kali lebih kecil
-                this.mechanics.bell.volume = 0.50;   // 2 kali lebih kecil
+                this.mechanics.report.volume = 0.33;
+                this.mechanics.bell.volume = 0.50;
 
                 this.soundEffects = [
                     'sounds/Sound_effect/Door_Open.mp3',
@@ -221,11 +237,7 @@
                     'sounds/Sound_effect/Knock.mp3',
                     'sounds/Sound_effect/Object_Drop.mp3',
                     'sounds/Sound_effect/Running_Footstep.mp3',
-                    'sounds/Sound_effect/Slide.mp3',
-                    'sounds/Sound_effect/Growl.mp3',
-                    'sounds/Sound_effect/Dying.mp3',
-                    'sounds/Sound_effect/Suffocated.mp3',
-                    'sounds/Sound_effect/Baby.mp3'
+                    'sounds/Sound_effect/Slide.mp3'
                 ];
 
                 this.mechanics.typing.loop = true;
@@ -298,7 +310,7 @@
         const audioManager = new AudioManager();
 
         // ==========================================
-        // DATA RUANG & ANOMALI HASIL EDITING HITBOX
+        // DATA RUANG & ANOMALI
         // ==========================================
         const ROOMS = [
             { id: 1, name: "CAM 01 - LIVING ROOM", normalImg: "image/ruang1_normal.jpeg" },
@@ -345,7 +357,7 @@
         let currentRoomIndex = 0;
         let isNVActive = false;
         let activeAnomalies = [];
-        let recentAnomalyIds = []; // MEMORI UNTUK CEGAH MUNCUL DUA KALI (7 SPOTS RECENT)
+        let recentAnomalyIds = [];
         let strikes = 0;
         let gameActive = false;
         let isReporting = false;
@@ -366,6 +378,76 @@
         const dangerWarning = document.getElementById('danger-warning');
         const dangerText = document.getElementById('danger-text');
         const nothingFoundText = document.getElementById('nothing-found-text');
+
+        // ==========================================
+        // SYSTEM PRELOADER & LOADING SCREEN
+        // ==========================================
+        const ASSETS_TO_PRELOAD = [
+            ...ROOMS.map(r => r.normalImg),
+            ...ANOMALY_POOL.map(a => a.imageSrc),
+            'sounds/Mechanic/Bell.mp3',
+            'sounds/Mechanic/NV_ON.mp3',
+            'sounds/Mechanic/NV_OFF.mp3',
+            'sounds/Mechanic/Report.mp3',
+            'sounds/Mechanic/Typing.mp3',
+            'sounds/Sound_effect/Door_Open.mp3',
+            'sounds/Sound_effect/Door_Slam.mp3',
+            'sounds/Sound_effect/Footstep.mp3',
+            'sounds/Sound_effect/Knock.mp3',
+            'sounds/Sound_effect/Object_Drop.mp3',
+            'sounds/Sound_effect/Running_Footstep.mp3',
+            'sounds/Sound_effect/Slide.mp3'
+        ];
+
+        function preloadAssets(onComplete) {
+            let loadedCount = 0;
+            const total = ASSETS_TO_PRELOAD.length;
+            const loadingBar = document.getElementById('loading-bar');
+            const loadingText = document.getElementById('loading-text');
+
+            ASSETS_TO_PRELOAD.forEach(url => {
+                const isAudio = url.endsWith('.mp3') || url.endsWith('.wav');
+                if (isAudio) {
+                    const audio = new Audio();
+                    audio.src = url;
+                    audio.oncanplaythrough = () => handleLoad();
+                    audio.onerror = () => handleLoad();
+                } else {
+                    const img = new Image();
+                    img.src = url;
+                    img.onload = () => handleLoad();
+                    img.onerror = () => handleLoad();
+                }
+            });
+
+            function handleLoad() {
+                loadedCount++;
+                const percent = Math.floor((loadedCount / total) * 100);
+                loadingBar.style.width = percent + "%";
+                loadingText.innerText = percent + "%";
+
+                if (loadedCount >= total) {
+                    setTimeout(() => {
+                        if (onComplete) onComplete();
+                    }, 400);
+                }
+            }
+        }
+
+        function selectDifficulty(mode) {
+            gameMode = mode;
+            maxStrikes = mode === 'hard' ? 3 : 5;
+            strikeDisplay.innerText = `0/${maxStrikes}`;
+            
+            document.getElementById('screen-menu').style.display = 'none';
+            document.getElementById('screen-loading').style.display = 'flex';
+
+            preloadAssets(() => {
+                document.getElementById('screen-loading').style.display = 'none';
+                document.getElementById('screen-tutorial').style.display = 'flex';
+                startTutorialText();
+            });
+        }
 
         // ==========================================
         // DEV MODE LOGIC
@@ -509,18 +591,8 @@
         // ==========================================
         // GAMEPLAY SYSTEM
         // ==========================================
-        function selectDifficulty(mode) {
-            gameMode = mode;
-            maxStrikes = mode === 'hard' ? 3 : 5;
-            strikeDisplay.innerText = `0/${maxStrikes}`;
-            
-            document.getElementById('screen-menu').style.display = 'none';
-            document.getElementById('screen-tutorial').style.display = 'flex';
-            startTutorialText();
-        }
-
         function startTutorialText() {
-            const text = `SYSTEM-PROTOCOL:\n\n1. MONITOR-CAM 01-TO-CAM 06.\n2. SURVIVE-FROM-12:00:00 AM-TO-06:00:00 AM.\n3. PRESS-'W'-TO-TOGGLE-NIGHT-VISION.\n4. SOME-ANOMALIES-ARE-ONLY-VISIBLE & REPORTABLE-VIA-NIGHT-VISION.\n5. HOLD-LEFT-CLICK-INSIDE-ANOMALY-AREA-TO-REPORT.\n6. MAXIMUM-ALLOWED-STRIKES: ${maxStrikes}.\n\nGOOD LUCK.`;
+            const text = `SYSTEM PROTOCOL:\n\n1. MONITOR CAM 01 TO CAM 06.\n2. SURVIVE FROM 12:00:00 AM TO 06:00:00 AM.\n3. PRESS 'W' TO TOGGLE NIGHT VISION.\n4. SOME ANOMALIES ARE ONLY VISIBLE & REPORTABLE VIA NIGHT VISION.\n5. HOLD LEFT CLICK INSIDE ANOMALY AREA TO REPORT.\n6. MAXIMUM ALLOWED STRIKES: ${maxStrikes}.\n\nGOOD LUCK.`;
             audioManager.typeWriter(document.getElementById('typewriter-text'), text, 20, () => {
                 document.getElementById('btn-start-game').style.display = 'inline-block';
             });
@@ -711,7 +783,6 @@
             if (!gameActive) return;
             const currentRoom = ROOMS[currentRoomIndex];
 
-            // LOGIKA CEGAH ANOMALI SAMA MUNCUL BERULANG (7 ANOMALI RECENT RECORD)
             const available = ANOMALY_POOL.filter(a => 
                 a.roomId !== currentRoom.id && 
                 !activeAnomalies.some(act => act.roomId === a.roomId) &&
@@ -724,7 +795,7 @@
 
                 recentAnomalyIds.push(chosen.id);
                 if (recentAnomalyIds.length > 7) {
-                    recentAnomalyIds.shift(); // Hapus yang tertua
+                    recentAnomalyIds.shift();
                 }
 
                 updateCameraView();
@@ -802,7 +873,6 @@
                 }
             }
 
-            // JIKA LAPORAN BENAR: TAMPILKAN LAYAR HITAM "REPORT IN PROGRESS"
             if (isCorrectReport) {
                 reportScreen.style.display = 'flex';
                 audioManager.startReportSound();
@@ -820,16 +890,14 @@
                     }, 300);
 
                 }, 1200);
-            } 
-            // JIKA LAPORAN SALAH: TANPA SCREEN REPORT, TAMPILKAN "NOTHING FOUND..."
-            else {
+            } else {
                 strikes++;
                 strikeDisplay.innerText = `${strikes}/${maxStrikes}`;
                 
                 if (strikes >= maxStrikes) {
                     gameActive = false;
                     audioManager.stopAmbience();
-                    alert("GAME OVER: TOO-MANY-INCORRECT-REPORTS!");
+                    alert("GAME OVER: TOO MANY INCORRECT REPORTS!");
                     isReporting = false;
                     return;
                 }
