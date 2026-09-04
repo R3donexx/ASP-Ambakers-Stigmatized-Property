@@ -167,6 +167,39 @@
     </style>
 </head>
 <body>
+    <!-- Control Panel Khusus Dev / Tester -->
+<div id="dev-tester-panel" style="background: #1e1e1e; color: #fff; padding: 15px; border-radius: 8px; margin-bottom: 15px;">
+  <h3>In-Game Anomaly Tester</h3>
+  
+  <div style="margin-bottom: 10px;">
+    <label><input type="radio" name="app-mode" value="editor" checked> Mode Editor (Bikin Hitbox)</label>
+    <label style="margin-left: 15px;"><input type="radio" name="app-mode" value="tester"> Mode Test In-Game</label>
+  </div>
+
+  <!-- Kontrol Khusus Mode Tester (Sembunyi secara default) -->
+  <div id="tester-controls" style="display: none; border-top: 1px solid #444; padding-top: 10px;">
+    <select id="tester-select-anomaly" style="padding: 5px;">
+      <option value="">-- Pilih Anomali Buat Dites --</option>
+    </select>
+    
+    <button id="btn-spawn-test" style="padding: 5px 10px; cursor: pointer;">Spawn Anomali</button>
+    <button id="btn-toggle-box" style="padding: 5px 10px; cursor: pointer;">Sembunyikan Box Merah</button>
+
+    <!-- Status Output Hasil Laporan -->
+    <div id="tester-status" style="margin-top: 10px; font-weight: bold; font-size: 14px; color: #ffca28;">
+      Status: Siap dites...
+    </div>
+  </div>
+</div>
+
+<!-- Container Layar Gim Kamu (Tempat Gambar & Hitbox Rendernya) -->
+<div id="game-screen" style="position: relative; display: inline-block;">
+  <img id="room-bg" src="" alt="Room Background" style="display: block; max-width: 100%;">
+  
+  <!-- Element Overlay Anomali & Hitbox -->
+  <img id="test-anomaly-img" src="" style="position: absolute; display: none; pointer-events: none;">
+  <div id="test-hitbox-box" style="position: absolute; border: 2px solid red; background: rgba(255,0,0,0.3); display: none; cursor: pointer;"></div>
+</div>
 
     <div id="screen-menu" class="overlay-screen">
         <h1 style="color: #ff3333; font-size: 18px; margin-bottom: 20px;">ASP: AMBAKERS STIGMATIZED PROPERTY</h1>
@@ -306,6 +339,123 @@
     </div>
 
     <script>
+        // Data Anomali (Gunakan JSON ringkas milikmu)
+const anomaliesData = [/* Masukkan JSON anomali yang sudah diperbaiki di sini */];
+
+let currentMode = 'editor';
+let activeTestAnomaly = null;
+let isBoxVisible = true;
+
+// DOM Elements
+const modeRadios = document.querySelectorAll('input[name="app-mode"]');
+const testerControls = document.getElementById('tester-controls');
+const selectAnomaly = document.getElementById('tester-select-anomaly');
+const btnSpawn = document.getElementById('btn-spawn-test');
+const btnToggleBox = document.getElementById('btn-toggle-box');
+const statusText = document.getElementById('tester-status');
+
+const gameScreen = document.getElementById('game-screen');
+const roomBg = document.getElementById('room-bg');
+const anomalyImg = document.getElementById('test-anomaly-img');
+const hitboxBox = document.getElementById('test-hitbox-box');
+
+// 1. Inisialisasi Dropdown
+anomaliesData.forEach(item => {
+  const opt = document.createElement('option');
+  opt.value = item.id;
+  opt.textContent = `${item.id} (Ruang ${item.roomId})`;
+  selectAnomaly.appendChild(opt);
+});
+
+// 2. Switch Antara Mode Editor & Tester
+modeRadios.forEach(radio => {
+  radio.addEventListener('change', (e) => {
+    currentMode = e.target.value;
+    if (currentMode === 'tester') {
+      testerControls.style.display = 'block';
+      resetTestArea();
+    } else {
+      testerControls.style.display = 'none';
+      resetTestArea();
+    }
+  });
+});
+
+// 3. Spawn Anomali untuk Dites
+btnSpawn.addEventListener('click', () => {
+  const selectedId = selectAnomaly.value;
+  if (!selectedId) return alert('Pilih anomali dulu!');
+
+  activeTestAnomaly = anomaliesData.find(a => a.id === selectedId);
+  
+  // Set background ruang yang sesuai
+  roomBg.src = `image/ruang${activeTestAnomaly.roomId}.png`; // Sesuaikan path background ruang
+  
+  // Set Gambar Anomali
+  anomalyImg.src = activeTestAnomaly.imageSrc;
+  anomalyImg.style.display = 'block';
+
+  // Apply Posisi Hitbox
+  const hb = activeTestAnomaly.hitbox;
+  hitboxBox.style.top = hb.top;
+  hitboxBox.style.left = hb.left;
+  hitboxBox.style.width = hb.width;
+  hitboxBox.style.height = hb.height;
+  hitboxBox.style.display = isBoxVisible ? 'block' : 'none';
+
+  statusText.innerText = `Anomali [${activeTestAnomaly.id}] Muncul! Silakan klik untuk melaporkan.`;
+  statusText.style.color = '#ffca28';
+});
+
+// 4. Toggle Sembunyikan / Tampilkan Box Merah
+btnToggleBox.addEventListener('click', () => {
+  isBoxVisible = !isBoxVisible;
+  btnToggleBox.innerText = isBoxVisible ? 'Sembunyikan Box Merah' : 'Tampilkan Box Merah';
+  if (activeTestAnomaly) {
+    hitboxBox.style.display = isBoxVisible ? 'block' : 'none';
+  }
+});
+
+// 5. Logika Deteksi Klik Laporan (In-Game Detection)
+gameScreen.addEventListener('click', (e) => {
+  if (currentMode !== 'tester' || !activeTestAnomaly) return;
+
+  // Dapatkan posisi koordinat klik relatif ke layar gim (%)
+  const rect = gameScreen.getBoundingClientRect();
+  const clickX = ((e.clientX - rect.left) / rect.width) * 100;
+  const clickY = ((e.clientY - rect.top) / rect.height) * 100;
+
+  // Ambil area hitbox
+  const hb = activeTestAnomaly.hitbox;
+  const top = parseFloat(hb.top);
+  const left = parseFloat(hb.left);
+  const width = parseFloat(hb.width);
+  const height = parseFloat(hb.height);
+
+  // Cek apakah titik klik masuk batas hitbox
+  const isHit = (clickX >= left && clickX <= (left + width)) &&
+                (clickY >= top && clickY <= (top + height));
+
+  if (isHit) {
+    statusText.innerText = `SUCCESS! Anomali [${activeTestAnomaly.id}] Berhasil Dilaporkan!`;
+    statusText.style.color = '#4caf50';
+    
+    // Efek ketika berhasil dilaporkan (Anomali Hilang)
+    anomalyImg.style.display = 'none';
+    hitboxBox.style.display = 'none';
+    activeTestAnomaly = null;
+  } else {
+    statusText.innerText = `MISS! Laporan Gagal. Klik kamu di (${clickX.toFixed(1)}%, ${clickY.toFixed(1)}%) di luar hitbox!`;
+    statusText.style.color = '#f44336';
+  }
+});
+
+function resetTestArea() {
+  activeTestAnomaly = null;
+  anomalyImg.style.display = 'none';
+  hitboxBox.style.display = 'none';
+  statusText.innerText = 'Siap dites...';
+}
         class AudioManager {
             constructor() {
                 this.mechanics = {
@@ -413,43 +563,48 @@
 
         // POOL ANOMALI DENGAN KOORDINAT DARI USER
         const ANOMALY_POOL = [
-            { "id": "r1_a1", "roomId": 1, "imageSrc": "image/ruang1_anomali1.png", "isNVOnly": false, "hitbox": { "top": "3.48%", "left": "9.92%", "width": "44.06%", "height": "28.46%" } },
-            { "id": "r1_a2", "roomId": 1, "imageSrc": "image/ruang1_anomali2.png", "isNVOnly": false, "hitbox": { "top": "41.52%", "left": "30.57%", "width": "12.35%", "height": "30.18%" } },
-            { "id": "r1_a3", "roomId": 1, "imageSrc": "image/ruang1_anomali3.png", "isNVOnly": false, "hitbox": { "top": "59.67%", "left": "81.63%", "width": "8.85%", "height": "12.51%" } },
-            { "id": "r1_a4", "roomId": 1, "imageSrc": "image/ruang1_anomali4.png", "isNVOnly": false, "hitbox": { "top": "30.23%", "left": "69.83%", "width": "13.09%", "height": "8.34%" } },
-            { "id": "r1_a5", "roomId": 1, "imageSrc": "image/ruang1_anomali5.png", "isNVOnly": false, "hitbox": { "top": "34.40%", "left": "8.63%", "width": "25.44%", "height": "44.90%" } },
-            { "id": "r1_a7", "roomId": 1, "imageSrc": "image/ruang1_anomali7.png", "isNVOnly": false, "hitbox": { "top": "55.26%", "left": "27.80%", "width": "61.20%", "height": "45.14%" } },
-            { "id": "r1_a8", "roomId": 1, "imageSrc": "image/ruang1_anomali8.png", "isNVOnly": false, "hitbox": { "top": "43.23%", "left": "42.55%", "width": "8.48%", "height": "15.95%" } },
-            { "id": "r1_a9", "roomId": 1, "imageSrc": "image/ruang1_anomali9.png", "isNVOnly": true,  "hitbox": { "top": "20.66%", "left": "59.88%", "width": "40.19%", "height": "79.25%" } },
-            { "id": "r2_a1", "roomId": 2, "imageSrc": "image/ruang2_anomali1.png", "isNVOnly": false, "hitbox": { "top": "30.72%", "left": "58.77%", "width": "15.48%", "height": "51.53%" } },
-            { "id": "r2_a2", "roomId": 2, "imageSrc": "image/ruang2_anomali2.png", "isNVOnly": false, "hitbox": { "top": "66.05%", "left": "10.84%", "width": "27.84%", "height": "34.34%" } },
-            { "id": "r2_a3", "roomId": 2, "imageSrc": "image/ruang2_anomali3.png", "isNVOnly": false, "hitbox": { "top": "90.84%", "left": "33.33%", "width": "28.39%", "height": "9.56%" } },
-            { "id": "r2_a4", "roomId": 2, "imageSrc": "image/ruang2_anomali4.png", "isNVOnly": false, "hitbox": { "top": "0.78%",  "left": "0.34%",   "width": "98.81%", "height": "18.65%" } },
-            { "id": "r2_a5", "roomId": 2, "imageSrc": "image/ruang2_anomali5.png", "isNVOnly": false, "hitbox": { "top": "26.79%", "left": "58.22%", "width": "28.95%", "height": "57.91%" } },
-            { "id": "r2_a6", "roomId": 2, "imageSrc": "image/ruang2_anomali6.png", "isNVOnly": false, "hitbox": { "top": "67.28%", "left": "8.45%",   "width": "16.04%", "height": "12.51%" } },
-            { "id": "r2_a7", "roomId": 2, "imageSrc": "image/ruang2_anomali7.png", "isNVOnly": false, "hitbox": { "top": "10.00%", "left": "10.00%", "width": "80.00%", "height": "80.00%" } },
-            { "id": "r2_a9", "roomId": 2, "imageSrc": "image/ruang2_anomali9.png", "isNVOnly": true,  "hitbox": { "top": "37.10%", "left": "21.90%", "width": "21.75%", "height": "57.91%" } },
-            { "id": "r3_a1", "roomId": 3, "imageSrc": "image/ruang3_anomali1.png", "isNVOnly": false, "hitbox": { "top": "54.28%", "left": "69.28%", "width": "9.03%",  "height": "12.76%" } },
-            { "id": "r3_a2", "roomId": 3, "imageSrc": "image/ruang3_anomali2.png", "isNVOnly": false, "hitbox": { "top": "15.75%", "left": "8.25%",   "width": "28.40%", "height": "47.36%" } },
-            { "id": "r3_a3", "roomId": 3, "imageSrc": "image/ruang3_anomali3.png", "isNVOnly": false, "hitbox": { "top": "56.24%", "left": "46.61%", "width": "22.68%", "height": "34.60%" } },
-            { "id": "r3_a9", "roomId": 3, "imageSrc": "image/ruang3_anomali9.png", "isNVOnly": true,  "hitbox": { "top": "52.31%", "left": "15.64%", "width": "24.70%", "height": "34.35%" } },
-            { "id": "r3_a10","roomId": 3, "imageSrc": "image/ruang3_anomali10.png","isNVOnly": true,  "hitbox": { "top": "33.17%", "left": "74.63%", "width": "17.51%", "height": "28.22%" } },
-            { "id": "r4_a1", "roomId": 4, "imageSrc": "image/ruang4_anomali1.png", "isNVOnly": false, "hitbox": { "top": "9.62%",  "left": "77.21%", "width": "22.12%", "height": "21.35%" } },
-            { "id": "r4_a2", "roomId": 4, "imageSrc": "image/ruang4_anomali2.png", "isNVOnly": false, "hitbox": { "top": "57.71%", "left": "20.25%", "width": "19.72%", "height": "41.47%" } },
-            { "id": "r4_a3", "roomId": 4, "imageSrc": "image/ruang4_anomali3.png", "isNVOnly": false, "hitbox": { "top": "45.20%", "left": "48.82%", "width": "17.14%", "height": "30.67%" } },
-            { "id": "r4_a4", "roomId": 4, "imageSrc": "image/ruang4_anomali4.png", "isNVOnly": false, "hitbox": { "top": "10.00%", "left": "10.00%", "width": "80.00%", "height": "80.00%" } },
-            { "id": "r4_a5", "roomId": 4, "imageSrc": "image/ruang4_anomali5.png", "isNVOnly": false, "hitbox": { "top": "10.00%", "left": "10.00%", "width": "80.00%", "height": "80.00%" } },
-            { "id": "r4_a6", "roomId": 4, "imageSrc": "image/ruang4_anomali6.png", "isNVOnly": false, "hitbox": { "top": "10.00%", "left": "10.00%", "width": "80.00%", "height": "80.00%" } },
-            { "id": "r4_a9", "roomId": 4, "imageSrc": "image/ruang4_anomali9.png", "isNVOnly": true,  "hitbox": { "top": "10.00%", "left": "10.00%", "width": "80.00%", "height": "80.00%" } },
-            { "id": "r6_a1", "roomId": 6, "imageSrc": "image/ruang6_anomali1.png", "isNVOnly": false, "hitbox": { "top": "43.72%", "left": "52.69%", "width": "16.04%", "height": "16.69%" } },
-            { "id": "r6_a2", "roomId": 6, "imageSrc": "image/ruang6_anomali2.png", "isNVOnly": false, "hitbox": { "top": "26.79%", "left": "4.94%",   "width": "12.72%", "height": "16.44%" } },
-            { "id": "r6_a3", "roomId": 6, "imageSrc": "image/ruang6_anomali3.png", "isNVOnly": false, "hitbox": { "top": "60.66%", "left": "37.57%", "width": "32.64%", "height": "31.90%" } },
-            { "id": "r6_a4", "roomId": 6, "imageSrc": "image/ruang6_anomali4.png", "isNVOnly": false, "hitbox": { "top": "10.00%", "left": "10.00%", "width": "80.00%", "height": "80.00%" } },
-            { "id": "r6_a5", "roomId": 6, "imageSrc": "image/ruang6_anomali5.png", "isNVOnly": false, "hitbox": { "top": "10.00%", "left": "10.00%", "width": "80.00%", "height": "80.00%" } },
-            { "id": "r7_a1", "roomId": 7, "imageSrc": "image/ruang7_anomali1.png", "isNVOnly": false, "hitbox": { "top": "10.00%", "left": "10.00%", "width": "80.00%", "height": "80.00%" } },
-            { "id": "r7_a2", "roomId": 7, "imageSrc": "image/ruang7_anomali2.png", "isNVOnly": false, "hitbox": { "top": "10.00%", "left": "10.00%", "width": "80.00%", "height": "80.00%" } },
-            { "id": "r7_a9", "roomId": 7, "imageSrc": "image/ruang7_anomali9.png", "isNVOnly": true,  "hitbox": { "top": "10.00%", "left": "10.00%", "width": "80.00%", "height": "80.00%" } }
-        ];
+  {"id": "r1_a1", "roomId": 1, "imageSrc": "image/ruang1_anomali1.png", "isNVOnly": false, "hitbox": {"top": "3.48%", "left": "9.92%", "width": "44.06%", "height": "28.46%"}},
+  {"id": "r1_a2", "roomId": 1, "imageSrc": "image/ruang1_anomali2.png", "isNVOnly": false, "hitbox": {"top": "41.52%", "left": "30.57%", "width": "12.35%", "height": "30.18%"}},
+  {"id": "r1_a3", "roomId": 1, "imageSrc": "image/ruang1_anomali3.png", "isNVOnly": false, "hitbox": {"top": "57.96%", "left": "80.35%", "width": "11.06%", "height": "17.42%"}},
+  {"id": "r1_a4", "roomId": 1, "imageSrc": "image/ruang1_anomali4.png", "isNVOnly": false, "hitbox": {"top": "30.23%", "left": "69.83%", "width": "13.09%", "height": "8.34%"}},
+  {"id": "r1_a5", "roomId": 1, "imageSrc": "image/ruang1_anomali5.png", "isNVOnly": false, "hitbox": {"top": "34.40%", "left": "8.63%", "width": "25.44%", "height": "44.90%"}},
+  {"id": "r1_a7", "roomId": 1, "imageSrc": "image/ruang1_anomali7.png", "isNVOnly": false, "hitbox": {"top": "55.26%", "left": "27.80%", "width": "61.20%", "height": "45.14%"}},
+  {"id": "r1_a8", "roomId": 1, "imageSrc": "image/ruang1_anomali8.png", "isNVOnly": false, "hitbox": {"top": "43.23%", "left": "42.55%", "width": "8.48%", "height": "15.95%"}},
+  {"id": "r1_a9", "roomId": 1, "imageSrc": "image/ruang1_anomali9.png", "isNVOnly": true,  "hitbox": {"top": "20.66%", "left": "59.88%", "width": "40.19%", "height": "79.25%"}},
+  
+  {"id": "r2_a1", "roomId": 2, "imageSrc": "image/ruang2_anomali1.png", "isNVOnly": false, "hitbox": {"top": "30.72%", "left": "58.77%", "width": "15.48%", "height": "51.53%"}},
+  {"id": "r2_a2", "roomId": 2, "imageSrc": "image/ruang2_anomali2.png", "isNVOnly": false, "hitbox": {"top": "66.05%", "left": "10.84%", "width": "27.84%", "height": "34.34%"}},
+  {"id": "r2_a3", "roomId": 2, "imageSrc": "image/ruang2_anomali3.png", "isNVOnly": false, "hitbox": {"top": "90.84%", "left": "33.33%", "width": "28.39%", "height": "9.56%"}},
+  {"id": "r2_a4", "roomId": 2, "imageSrc": "image/ruang2_anomali4.png", "isNVOnly": false, "hitbox": {"top": "0.78%", "left": "0.34%", "width": "98.81%", "height": "18.65%"}},
+  {"id": "r2_a5", "roomId": 2, "imageSrc": "image/ruang2_anomali5.png", "isNVOnly": false, "hitbox": {"top": "26.79%", "left": "58.22%", "width": "28.95%", "height": "57.91%"}},
+  {"id": "r2_a6", "roomId": 2, "imageSrc": "image/ruang2_anomali6.png", "isNVOnly": false, "hitbox": {"top": "67.28%", "left": "8.45%", "width": "16.04%", "height": "12.51%"}},
+  {"id": "r2_a7", "roomId": 2, "imageSrc": "image/ruang2_anomali7.png", "isNVOnly": false, "hitbox": {"top": "1.76%", "left": "0.32%", "width": "51.45%", "height": "91.28%"}},
+  {"id": "r2_a9", "roomId": 2, "imageSrc": "image/ruang2_anomali9.png", "isNVOnly": true,  "hitbox": {"top": "37.10%", "left": "21.90%", "width": "21.75%", "height": "57.91%"}},
+
+  {"id": "r3_a1", "roomId": 3, "imageSrc": "image/ruang3_anomali1.png", "isNVOnly": false, "hitbox": {"top": "54.28%", "left": "69.28%", "width": "9.03%", "height": "12.76%"}},
+  {"id": "r3_a2", "roomId": 3, "imageSrc": "image/ruang3_anomali2.png", "isNVOnly": false, "hitbox": {"top": "15.75%", "left": "8.25%", "width": "28.40%", "height": "47.36%"}},
+  {"id": "r3_a3", "roomId": 3, "imageSrc": "image/ruang3_anomali3.png", "isNVOnly": false, "hitbox": {"top": "56.24%", "left": "46.61%", "width": "22.68%", "height": "34.60%"}},
+  {"id": "r3_a9", "roomId": 3, "imageSrc": "image/ruang3_anomali9.png", "isNVOnly": true,  "hitbox": {"top": "52.31%", "left": "15.64%", "width": "24.70%", "height": "34.35%"}},
+  {"id": "r3_a10","roomId": 3, "imageSrc": "image/ruang3_anomali10.png","isNVOnly": true,  "hitbox": {"top": "33.17%", "left": "74.63%", "width": "17.51%", "height": "28.22%"}},
+
+  {"id": "r4_a1", "roomId": 4, "imageSrc": "image/ruang4_anomali1.png", "isNVOnly": false, "hitbox": {"top": "9.62%", "left": "77.21%", "width": "22.12%", "height": "21.35%"}},
+  {"id": "r4_a2", "roomId": 4, "imageSrc": "image/ruang4_anomali2.png", "isNVOnly": false, "hitbox": {"top": "57.71%", "left": "20.25%", "width": "19.72%", "height": "41.47%"}},
+  {"id": "r4_a3", "roomId": 4, "imageSrc": "image/ruang4_anomali3.png", "isNVOnly": false, "hitbox": {"top": "45.20%", "left": "48.82%", "width": "17.14%", "height": "30.67%"}},
+  {"id": "r4_a4", "roomId": 4, "imageSrc": "image/ruang4_anomali4.png", "isNVOnly": false, "hitbox": {"top": "60.41%", "left": "30.60%", "width": "11.78%", "height": "14.23%"}},
+  {"id": "r4_a5", "roomId": 4, "imageSrc": "image/ruang4_anomali5.png", "isNVOnly": false, "hitbox": {"top": "16.00%", "left": "80.90%", "width": "12.54%", "height": "18.40%"}},
+  {"id": "r4_a6", "roomId": 4, "imageSrc": "image/ruang4_anomali6.png", "isNVOnly": false, "hitbox": {"top": "9.62%", "left": "38.51%", "width": "29.47%", "height": "80.73%"}},
+  {"id": "r4_a9", "roomId": 4, "imageSrc": "image/ruang4_anomali9.png", "isNVOnly": true,  "hitbox": {"top": "2.75%", "left": "1.83%", "width": "97.12%", "height": "95.69%"}},
+
+  {"id": "r6_a1", "roomId": 6, "imageSrc": "image/ruang6_anomali1.png", "isNVOnly": false, "hitbox": {"top": "43.72%", "left": "52.69%", "width": "16.04%", "height": "16.69%"}},
+  {"id": "r6_a2", "roomId": 6, "imageSrc": "image/ruang6_anomali2.png", "isNVOnly": false, "hitbox": {"top": "26.79%", "left": "4.94%", "width": "12.72%", "height": "16.44%"}},
+  {"id": "r6_a3", "roomId": 6, "imageSrc": "image/ruang6_anomali3.png", "isNVOnly": false, "hitbox": {"top": "60.66%", "left": "37.57%", "width": "32.64%", "height": "31.90%"}},
+  {"id": "r6_a4", "roomId": 6, "imageSrc": "image/ruang6_anomali4.png", "isNVOnly": false, "hitbox": {"top": "42.01%", "left": "64.30%", "width": "23.77%", "height": "57.66%"}},
+  {"id": "r6_a5", "roomId": 6, "imageSrc": "image/ruang6_anomali5.png", "isNVOnly": false, "hitbox": {"top": "38.08%", "left": "35.35%", "width": "38.01%", "height": "49.07%"}},
+
+  {"id": "r7_a1", "roomId": 7, "imageSrc": "image/ruang7_anomali1.png", "isNVOnly": false, "hitbox": {"top": "31.50%", "left": "58.07%", "width": "27.85%", "height": "34.91%"}},
+  {"id": "r7_a2", "roomId": 7, "imageSrc": "image/ruang7_anomali2.png", "isNVOnly": false, "hitbox": {"top": "19.88%", "left": "39.48%", "width": "9.56%", "height": "18.51%"}},
+  {"id": "r7_a9", "roomId": 7, "imageSrc": "image/ruang7_anomali9.png", "isNVOnly": true,  "hitbox": {"top": "17.16%", "left": "5.02%", "width": "40.38%", "height": "64.94%"}}
+];
 
         let gameMode = 'normal';
         let maxStrikes = 5;
