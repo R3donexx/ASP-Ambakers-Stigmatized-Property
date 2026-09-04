@@ -20,6 +20,7 @@
         #viewport {
             max-width: 95vw; max-height: 90vh; width: auto; height: auto;
             object-fit: contain; display: block; border: 2px solid #222; box-shadow: 0 0 15px rgba(0,0,0,0.9);
+            cursor: default;
         }
         .overlay-screen {
             position: absolute; top: 0; left: 0; width: 100%; height: 100%;
@@ -36,7 +37,6 @@
         .btn-danger { color: #ff3333; border-color: #ff3333; box-shadow: 4px 4px 0px #550000; }
         .btn-danger:hover { background: #ff3333; color: #000; }
 
-        /* ANIMASI & STYLING LOADING SCREEN */
         .glitch-text {
             font-size: 16px; color: #00ff00; text-shadow: 2px 2px #005500;
             animation: pulseText 1.2s infinite alternate; margin-bottom: 25px;
@@ -70,7 +70,7 @@
         #btn-prev { left: 20px; } #btn-next { right: 20px; }
 
         #hitbox { 
-            position: absolute; display: none; cursor: crosshair; 
+            position: absolute; display: none; cursor: default; 
             z-index: 10; border: none; background: transparent; 
         }
         #progress-ring { position: absolute; pointer-events: none; display: none; transform: translate(-50%, -50%); z-index: 30; }
@@ -99,7 +99,15 @@
             box-shadow: 0 0 10px #ff0000; pointer-events: none;
         }
 
-        /* DEV MODE STYLING */
+        /* REBOOT MODAL (DISESUAIKAN UNTUK 7 KAMERA) */
+        #reboot-modal {
+            position: absolute; bottom: 70px; right: 20px; background: rgba(0,0,0,0.95);
+            border: 2px solid #00ffff; padding: 15px; z-index: 100; display: none; flex-direction: column;
+            align-items: center; box-shadow: 0 0 10px #00ffff;
+        }
+        .reboot-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 5px; margin-top: 10px; }
+        .reboot-btn { font-size: 8px; padding: 8px; border-color: #00ffff; color: #00ffff; }
+
         #screen-dev {
             position: absolute; top: 0; left: 0; width: 100%; height: 100%;
             background: #080808; color: #00ffff; display: none; flex-direction: column;
@@ -124,30 +132,29 @@
             margin-top: 5px; width: 95%; height: 70px; background: #000; color: #00ff00;
             border: 1px solid #00ffff; font-size: 8px; padding: 5px; overflow-y: auto; white-space: pre-wrap;
         }
-        /* STYLING SHIFT REPORT SHEET */
-#shift-report-screen {
-    position: absolute; top: 0; left: 0; width: 100%; height: 100%;
-    background: rgba(0, 0, 0, 0.9); z-index: 500; display: none;
-    justify-content: center; align-items: center; padding: 20px;
-}
-.report-paper {
-    background: #111; color: #00ff00; border: 3px solid #00ff00;
-    width: 100%; max-width: 650px; padding: 25px; box-shadow: 0 0 25px rgba(0, 255, 0, 0.2);
-    font-size: 10px; line-height: 1.8; font-family: 'Press Start 2P', monospace;
-    text-align: left; max-height: 90vh; overflow-y: auto;
-}
-.report-header { text-align: center; border-bottom: 2px dashed #00ff00; padding-bottom: 15px; margin-bottom: 15px; }
-.report-section { margin-bottom: 15px; border-bottom: 1px solid #005500; padding-bottom: 10px; }
-.report-title { color: #ffff00; margin-bottom: 8px; text-transform: uppercase; }
-.report-list { list-style: none; padding: 0; margin: 0; color: #aaa; font-size: 9px; }
-.report-list li { margin-bottom: 4px; }
-.text-ghostly { color: #00ffff; }
-.text-missed { color: #ff3333; }
+
+        #shift-report-screen {
+            position: absolute; top: 0; left: 0; width: 100%; height: 100%;
+            background: rgba(0, 0, 0, 0.9); z-index: 500; display: none;
+            justify-content: center; align-items: center; padding: 20px;
+        }
+        .report-paper {
+            background: #111; color: #00ff00; border: 3px solid #00ff00;
+            width: 100%; max-width: 650px; padding: 25px; box-shadow: 0 0 25px rgba(0, 255, 0, 0.2);
+            font-size: 10px; line-height: 1.8; font-family: 'Press Start 2P', monospace;
+            text-align: left; max-height: 90vh; overflow-y: auto;
+        }
+        .report-header { text-align: center; border-bottom: 2px dashed #00ff00; padding-bottom: 15px; margin-bottom: 15px; }
+        .report-section { margin-bottom: 15px; border-bottom: 1px solid #005500; padding-bottom: 10px; }
+        .report-title { color: #ffff00; margin-bottom: 8px; text-transform: uppercase; }
+        .report-list { list-style: none; padding: 0; margin: 0; color: #aaa; font-size: 9px; }
+        .report-list li { margin-bottom: 4px; }
+        .text-ghostly { color: #00ffff; }
+        .text-missed { color: #ff3333; }
     </style>
 </head>
 <body>
 
-    <!-- SCREEN 1: LOBBY -->
     <div id="screen-menu" class="overlay-screen">
         <h1 style="color: #ff3333; font-size: 18px; margin-bottom: 20px;">ASP: AMBAKERS STIGMATIZED PROPERTY</h1>
         <p style="color: #888; font-size: 10px; margin-bottom: 30px;">[ SYSTEM READY ]</p>
@@ -158,7 +165,6 @@
         <button class="btn-pixel" style="border-color: #00ffff; color: #00ffff; margin-top: 25px;" onclick="accessDevMode()">[ DEV MODE (HITBOX MAKER) ]</button>
     </div>
 
-    <!-- SCREEN 1.5: LOADING SCREEN (NEW) -->
     <div id="screen-loading" class="overlay-screen" style="display: none;">
         <div class="glitch-text">ASP - Ambakers Stigmatized Property</div>
         <div style="font-size: 10px; color: #888;">LOADING SYSTEM ASSETS...</div>
@@ -168,13 +174,11 @@
         <div id="loading-text" style="font-size: 9px; margin-top: 15px; color: #00ff00;">0%</div>
     </div>
 
-    <!-- SCREEN 2: TUTORIAL -->
     <div id="screen-tutorial" class="overlay-screen" style="display: none;">
         <div id="typewriter-text" style="font-size: 10px; line-height: 2; color: #00ff00; max-width: 800px; text-align: left;"></div>
         <button id="btn-start-game" class="btn-pixel" style="display: none; margin-top: 30px;">INITIALIZE MONITORING</button>
     </div>
 
-    <!-- SCREEN 3: DEV MODE EDITOR -->
     <div id="screen-dev">
         <div id="dev-controls">
             <div>
@@ -198,7 +202,6 @@
         <textarea id="dev-output" readonly placeholder="Hasil JSON data..."></textarea>
     </div>
 
-    <!-- GAMEPLAY CONTAINER -->
     <div id="game-container">
         <div id="hud-top-left" class="hud-element"><span id="cam-name">CAM 01 - LIVING ROOM</span></div>
         <div id="hud-top-right" class="hud-element">
@@ -218,12 +221,30 @@
             <button class="btn-pixel" id="btn-nv">NV [OFF] (W)</button>
         </div>
 
+        <div id="hud-bottom-right" style="position: absolute; bottom: 20px; right: 20px; z-index: 20;">
+            <button class="btn-pixel" id="btn-reboot-menu" style="border-color: #00ffff; color: #00ffff;">REBOOT CAM</button>
+        </div>
+
+        <div id="reboot-modal">
+            <div style="font-size: 8px; color: #00ffff; margin-bottom: 5px;">SELECT CAM TO REBOOT</div>
+            <div class="reboot-grid">
+                <button class="btn-pixel reboot-btn" onclick="executeReboot(1)">CAM 1</button>
+                <button class="btn-pixel reboot-btn" onclick="executeReboot(2)">CAM 2</button>
+                <button class="btn-pixel reboot-btn" onclick="executeReboot(3)">CAM 3</button>
+                <button class="btn-pixel reboot-btn" onclick="executeReboot(4)">CAM 4</button>
+                <button class="btn-pixel reboot-btn" onclick="executeReboot(5)">CAM 5</button>
+                <button class="btn-pixel reboot-btn" onclick="executeReboot(6)">CAM 6</button>
+                <button class="btn-pixel reboot-btn" onclick="executeReboot(7)">CAM 7</button>
+            </div>
+            <button class="btn-pixel btn-danger" onclick="toggleRebootModal()" style="font-size: 6px; padding: 5px; margin-top: 10px;">CANCEL</button>
+        </div>
+
         <svg id="progress-ring" width="60" height="60">
             <circle stroke="#00ff00" stroke-width="4" fill="transparent" r="22" cx="30" cy="30" style="stroke-dasharray: 140; stroke-dashoffset: 140; transition: stroke-dashoffset 0.1s linear;"/>
         </svg>
 
         <div id="report-screen">
-            <div>REPORT IN PROGRESS...</div>
+            <div id="report-screen-text">REPORT IN PROGRESS...</div>
             <div style="font-size: 10px; color: #888; margin-top: 15px;">PLEASE WAIT...</div>
         </div>
 
@@ -232,50 +253,46 @@
         <div id="witch-hour-overlay">⚠️ WITCH HOUR HAS BEGUN ⚠️<br><span style="font-size: 10px; color: #fff;">ANOMALY ACTIVITY FREQUENCY DOUBLED</span></div>
     </div>
 
-    <!-- SCREEN 4: SHIFT REPORT SHEET -->
-<div id="shift-report-screen">
-    <div class="report-paper">
-        <div class="report-header">
-            <h2 style="font-size: 14px; margin: 0 0 10px 0;">AMBAKERS SECURITY CORP.</h2>
-            <div>DAILY MONITORING SHIFT REPORT</div>
-            <div style="color: #888; font-size: 8px; margin-top: 5px;">SOP COMPLIANCE VERIFICATION FORM</div>
-        </div>
+    <div id="shift-report-screen">
+        <div class="report-paper">
+            <div class="report-header">
+                <h2 style="font-size: 14px; margin: 0 0 10px 0;">AMBAKERS SECURITY CORP.</h2>
+                <div>DAILY MONITORING SHIFT REPORT</div>
+                <div style="color: #888; font-size: 8px; margin-top: 5px;">SOP COMPLIANCE VERIFICATION FORM</div>
+            </div>
 
-        <div class="report-section">
-            <div class="report-title">[ SHIFT DETAILS ]</div>
-            <div>OPERATOR : SHIFT MONITOR #042</div>
-            <div>STATUS   : <span style="color: #00ff00;">SHIFT COMPLETED (06:00 AM)</span></div>
-            <div>TOTAL STRIKES : <span id="rpt-strikes">0</span></div>
-        </div>
+            <div class="report-section">
+                <div class="report-title">[ SHIFT DETAILS ]</div>
+                <div>OPERATOR : SHIFT MONITOR #042</div>
+                <div>STATUS   : <span style="color: #00ff00;">SHIFT COMPLETED (06:00 AM)</span></div>
+                <div>TOTAL STRIKES : <span id="rpt-strikes">0</span></div>
+            </div>
 
-        <div class="report-section">
-            <div class="report-title">[ ANOMALIES CLEARED ]</div>
-            <div>TOTAL CLEARED  : <span id="rpt-cleared-count" style="color: #00ff00;">0</span></div>
-            <div>GHOSTLY (NV ONLY): <span id="rpt-ghostly-count" class="text-ghostly">0</span></div>
-            <ul id="rpt-cleared-list" class="report-list" style="margin-top: 8px;"></ul>
-        </div>
+            <div class="report-section">
+                <div class="report-title">[ ANOMALIES CLEARED ]</div>
+                <div>TOTAL CLEARED  : <span id="rpt-cleared-count" style="color: #00ff00;">0</span></div>
+                <div>GHOSTLY (NV ONLY): <span id="rpt-ghostly-count" class="text-ghostly">0</span></div>
+                <ul id="rpt-cleared-list" class="report-list" style="margin-top: 8px;"></ul>
+            </div>
 
-        <div class="report-section">
-            <div class="report-title">[ MISSED / UNRESOLVED ANOMALIES ]</div>
-            <div>TOTAL MISSED : <span id="rpt-missed-count" class="text-missed">0</span></div>
-            <ul id="rpt-missed-list" class="report-list" style="margin-top: 8px;"></ul>
-        </div>
+            <div class="report-section">
+                <div class="report-title">[ MISSED / UNRESOLVED ANOMALIES ]</div>
+                <div>TOTAL MISSED : <span id="rpt-missed-count" class="text-missed">0</span></div>
+                <ul id="rpt-missed-list" class="report-list" style="margin-top: 8px;"></ul>
+            </div>
 
-        <div class="report-section">
-            <div class="report-title">[ SOP EVALUATION ]</div>
-            <div id="rpt-sop-eval" style="color: #888; font-size: 8px;"></div>
-        </div>
+            <div class="report-section">
+                <div class="report-title">[ SOP EVALUATION ]</div>
+                <div id="rpt-sop-eval" style="color: #888; font-size: 8px;"></div>
+            </div>
 
-        <div style="text-align: center; margin-top: 20px;">
-            <button class="btn-pixel" onclick="endShiftAndGoToLobby()">[ END SHIFT & RETURN TO LOBBY ]</button>
+            <div style="text-align: center; margin-top: 20px;">
+                <button class="btn-pixel" onclick="endShiftAndGoToLobby()">[ END SHIFT & RETURN TO LOBBY ]</button>
+            </div>
         </div>
     </div>
-</div>
 
     <script>
-        // ==========================================
-        // MANAJEMEN AUDIO ENGINE
-        // ==========================================
         class AudioManager {
             constructor() {
                 this.mechanics = {
@@ -343,9 +360,9 @@
                 }, speed);
             }
 
-            startAmbience(intervalMs = 100000) {
+            startAmbience(intervalMs = 120000) {
                 const schedule = () => {
-                    const delay = intervalMs * (2 + Math.random() * 2);
+                    const delay = intervalMs * (2.5 + Math.random() * 2.5);
                     this.ambienceTimer = setTimeout(() => {
                         this.playRandomSFX();
                         schedule();
@@ -369,65 +386,89 @@
         const audioManager = new AudioManager();
 
         // ==========================================
-        // DATA RUANG & ANOMALI
+        // DATA RUANG & ANOMALI (DIPERBARUI SESPASAI BUKTI GAMBAR FILE)
         // ==========================================
         const ROOMS = [
-            { id: 1, name: "CAM 01 - LIVING ROOM", normalImg: "image/ruang1_normal.jpeg" },
+            { id: 1, name: "CAM 01 - LIVING ROOM", normalImg: "image/ruang1_normal.png" },
             { id: 2, name: "CAM 02 - TOILET", normalImg: "image/ruang2_normal.png" },
             { id: 3, name: "CAM 03 - STORAGE", normalImg: "image/ruang3_normal.png" },
-            { id: 4, name: "CAM 04 - KITCHEN", normalImg: "image/ruang4_normal.jpeg" },
-            { id: 5, name: "CAM 05 - BEDROOM 1", normalImg: "image/ruang5_normal.jpeg" },
-            { id: 6, name: "CAM 06 - WORKSPACE", normalImg: "image/ruang6_normal.jpeg" }
+            { id: 4, name: "CAM 04 - KITCHEN", normalImg: "image/ruang4_normal.png" },
+            { id: 5, name: "CAM 05 - BEDROOM 1", normalImg: "image/ruang5_normal.png" },
+            { id: 6, name: "CAM 06 - WORKSPACE", normalImg: "image/ruang6_normal.png" },
+            { id: 7, name: "CAM 07 - BEDROOM 2", normalImg: "image/ruang7_normal.png" }
         ];
 
         const ANOMALY_POOL = [
-            { "id": "r1_a1", "roomId": 1, "imageSrc": "image/ruang1_anomali1.png", "isNVOnly": false, "hitbox": { "top": "3.48%", "left": "9.92%", "width": "44.06%", "height": "28.46%" } },
-            { "id": "r1_a2", "roomId": 1, "imageSrc": "image/ruang1_anomali2.png", "isNVOnly": false, "hitbox": { "top": "41.52%", "left": "30.57%", "width": "12.35%", "height": "30.18%" } },
-            { "id": "r1_a3", "roomId": 1, "imageSrc": "image/ruang1_anomali3.png", "isNVOnly": false, "hitbox": { "top": "59.67%", "left": "81.63%", "width": "8.85%", "height": "12.51%" } },
-            { "id": "r1_a4", "roomId": 1, "imageSrc": "image/ruang1_anomali4.png", "isNVOnly": false, "hitbox": { "top": "30.23%", "left": "69.83%", "width": "13.09%", "height": "8.34%" } },
-            { "id": "r1_a5", "roomId": 1, "imageSrc": "image/ruang1_anomali5.png", "isNVOnly": false, "hitbox": { "top": "34.40%", "left": "8.63%", "width": "25.44%", "height": "44.90%" } },
-            { "id": "r1_a6", "roomId": 1, "imageSrc": "image/ruang1_anomali6.png", "isNVOnly": false, "hitbox": { "top": "51.33%", "left": "64.30%", "width": "8.11%", "height": "8.59%" } },
-            { "id": "r1_a7", "roomId": 1, "imageSrc": "image/ruang1_anomali7.png", "isNVOnly": false, "hitbox": { "top": "55.26%", "left": "27.80%", "width": "61.20%", "height": "45.14%" } },
-            { "id": "r1_a8", "roomId": 1, "imageSrc": "image/ruang1_anomali8.png", "isNVOnly": false, "hitbox": { "top": "43.23%", "left": "42.55%", "width": "8.48%", "height": "15.95%" } },
-            { "id": "r1_a9", "roomId": 1, "imageSrc": "image/ruang1_anomali9.png", "isNVOnly": true,  "hitbox": { "top": "20.66%", "left": "59.88%", "width": "40.19%", "height": "79.25%" } },
-            { "id": "r2_a1", "roomId": 2, "imageSrc": "image/ruang2_anomali1.png", "isNVOnly": false, "hitbox": { "top": "30.72%", "left": "58.77%", "width": "15.48%", "height": "51.53%" } },
-            { "id": "r2_a2", "roomId": 2, "imageSrc": "image/ruang2_anomali2.png", "isNVOnly": false, "hitbox": { "top": "66.05%", "left": "10.84%", "width": "27.84%", "height": "34.34%" } },
-            { "id": "r2_a3", "roomId": 2, "imageSrc": "image/ruang2_anomali3.png", "isNVOnly": false, "hitbox": { "top": "90.84%", "left": "33.33%", "width": "28.39%", "height": "9.56%" } },
-            { "id": "r2_a4", "roomId": 2, "imageSrc": "image/ruang2_anomali4.png", "isNVOnly": false, "hitbox": { "top": "0.78%",  "left": "0.34%",   "width": "98.81%", "height": "18.65%" } },
-            { "id": "r2_a5", "roomId": 2, "imageSrc": "image/ruang2_anomali5.png", "isNVOnly": false, "hitbox": { "top": "26.79%", "left": "58.22%", "width": "28.95%", "height": "57.91%" } },
-            { "id": "r2_a6", "roomId": 2, "imageSrc": "image/ruang2_anomali6.png", "isNVOnly": false, "hitbox": { "top": "67.28%", "left": "8.45%",   "width": "16.04%", "height": "12.51%" } },
-            { "id": "r2_a9", "roomId": 2, "imageSrc": "image/ruang2_anomali9.png", "isNVOnly": true,  "hitbox": { "top": "37.10%", "left": "21.90%", "width": "21.75%", "height": "57.91%" } },
-            { "id": "r3_a1", "roomId": 3, "imageSrc": "image/ruang3_anomali1.png", "isNVOnly": false, "hitbox": { "top": "54.28%", "left": "69.28%", "width": "9.03%",  "height": "12.76%" } },
-            { "id": "r3_a2", "roomId": 3, "imageSrc": "image/ruang3_anomali2.png", "isNVOnly": false, "hitbox": { "top": "15.75%", "left": "8.25%",   "width": "28.40%", "height": "47.36%" } },
-            { "id": "r3_a3", "roomId": 3, "imageSrc": "image/ruang3_anomali3.png", "isNVOnly": false, "hitbox": { "top": "56.24%", "left": "46.61%", "width": "22.68%", "height": "34.60%" } },
-            { "id": "r3_a9", "roomId": 3, "imageSrc": "image/ruang3_anomali9.png", "isNVOnly": true,  "hitbox": { "top": "52.31%", "left": "15.64%", "width": "24.70%", "height": "34.35%" } },
-            { "id": "r3_a10","roomId": 3, "imageSrc": "image/ruang3_anomali10.png","isNVOnly": true,  "hitbox": { "top": "33.17%", "left": "74.63%", "width": "17.51%", "height": "28.22%" } },
-            { "id": "r4_a1", "roomId": 4, "imageSrc": "image/ruang4_anomali1.png", "isNVOnly": false, "hitbox": { "top": "9.62%",  "left": "77.21%", "width": "22.12%", "height": "21.35%" } },
-            { "id": "r4_a2", "roomId": 4, "imageSrc": "image/ruang4_anomali2.png", "isNVOnly": false, "hitbox": { "top": "57.71%", "left": "20.25%", "width": "19.72%", "height": "41.47%" } },
-            { "id": "r4_a3", "roomId": 4, "imageSrc": "image/ruang4_anomali3.png", "isNVOnly": false, "hitbox": { "top": "45.20%", "left": "48.82%", "width": "17.14%", "height": "30.67%" } },
-            { "id": "r6_a1", "roomId": 6, "imageSrc": "image/ruang6_anomali1.png", "isNVOnly": false, "hitbox": { "top": "43.72%", "left": "52.69%", "width": "16.04%", "height": "16.69%" } },
-            { "id": "r6_a2", "roomId": 6, "imageSrc": "image/ruang6_anomali2.png", "isNVOnly": false, "hitbox": { "top": "26.79%", "left": "4.94%",   "width": "12.72%", "height": "16.44%" } },
-            { "id": "r6_a3", "roomId": 6, "imageSrc": "image/ruang6_anomali3.png", "isNVOnly": false, "hitbox": { "top": "60.66%", "left": "37.57%", "width": "32.64%", "height": "31.90%" } }
+            // RUANG 1
+            { "id": "r1_a1", "roomId": 1, "imageSrc": "image/ruang1_anomali1.jpe.png", "isNVOnly": false, "hitbox": { "top": "3.48%", "left": "9.92%", "width": "44.06%", "height": "28.46%" } },
+            { "id": "r1_a2", "roomId": 1, "imageSrc": "image/ruang1_anomali2.jpe.png", "isNVOnly": false, "hitbox": { "top": "41.52%", "left": "30.57%", "width": "12.35%", "height": "30.18%" } },
+            { "id": "r1_a3", "roomId": 1, "imageSrc": "image/ruang1_anomali3.jpe.png", "isNVOnly": false, "hitbox": { "top": "59.67%", "left": "81.63%", "width": "8.85%", "height": "12.51%" } },
+            { "id": "r1_a4", "roomId": 1, "imageSrc": "image/ruang1_anomali4.jpe.png", "isNVOnly": false, "hitbox": { "top": "30.23%", "left": "69.83%", "width": "13.09%", "height": "8.34%" } },
+            { "id": "r1_a5", "roomId": 1, "imageSrc": "image/ruang1_anomali5.jpe.png", "isNVOnly": false, "hitbox": { "top": "34.40%", "left": "8.63%", "width": "25.44%", "height": "44.90%" } },
+            { "id": "r1_a6", "roomId": 1, "imageSrc": "image/ruang1_anomali6.jpe.png", "isNVOnly": false, "hitbox": { "top": "51.33%", "left": "64.30%", "width": "8.11%", "height": "8.59%" } },
+            { "id": "r1_a7", "roomId": 1, "imageSrc": "image/ruang1_anomali7.jpe.png", "isNVOnly": false, "hitbox": { "top": "55.26%", "left": "27.80%", "width": "61.20%", "height": "45.14%" } },
+            { "id": "r1_a8", "roomId": 1, "imageSrc": "image/ruang1_anomali8.jpe.png", "isNVOnly": false, "hitbox": { "top": "43.23%", "left": "42.55%", "width": "8.48%", "height": "15.95%" } },
+            { "id": "r1_a9", "roomId": 1, "imageSrc": "image/ruang1_anomali9.jpe.png", "isNVOnly": true,  "hitbox": { "top": "20.66%", "left": "59.88%", "width": "40.19%", "height": "79.25%" } },
+            
+            // RUANG 2
+            { "id": "r2_a1", "roomId": 2, "imageSrc": "image/ruang2_anomali1.jpe.png", "isNVOnly": false, "hitbox": { "top": "30.72%", "left": "58.77%", "width": "15.48%", "height": "51.53%" } },
+            { "id": "r2_a2", "roomId": 2, "imageSrc": "image/ruang2_anomali2.jpe.png", "isNVOnly": false, "hitbox": { "top": "66.05%", "left": "10.84%", "width": "27.84%", "height": "34.34%" } },
+            { "id": "r2_a3", "roomId": 2, "imageSrc": "image/ruang2_anomali3.jpe.png", "isNVOnly": false, "hitbox": { "top": "90.84%", "left": "33.33%", "width": "28.39%", "height": "9.56%" } },
+            { "id": "r2_a4", "roomId": 2, "imageSrc": "image/ruang2_anomali4.jpe.png", "isNVOnly": false, "hitbox": { "top": "0.78%",  "left": "0.34%",   "width": "98.81%", "height": "18.65%" } },
+            { "id": "r2_a5", "roomId": 2, "imageSrc": "image/ruang2_anomali5.png",     "isNVOnly": false, "hitbox": { "top": "26.79%", "left": "58.22%", "width": "28.95%", "height": "57.91%" } },
+            { "id": "r2_a6", "roomId": 2, "imageSrc": "image/ruang2_anomali6.jpe.png", "isNVOnly": false, "hitbox": { "top": "67.28%", "left": "8.45%",   "width": "16.04%", "height": "12.51%" } },
+            { "id": "r2_a7", "roomId": 2, "imageSrc": "image/ruang2_anomali7.jpe.png", "isNVOnly": false, "hitbox": { "top": "10.00%", "left": "10.00%", "width": "80.00%", "height": "80.00%" } },
+            { "id": "r2_a9", "roomId": 2, "imageSrc": "image/ruang2_anomali9.jpe.png", "isNVOnly": true,  "hitbox": { "top": "37.10%", "left": "21.90%", "width": "21.75%", "height": "57.91%" } },
+            
+            // RUANG 3
+            { "id": "r3_a1", "roomId": 3, "imageSrc": "image/ruang3_anomali1.jpe.png", "isNVOnly": false, "hitbox": { "top": "54.28%", "left": "69.28%", "width": "9.03%",  "height": "12.76%" } },
+            { "id": "r3_a2", "roomId": 3, "imageSrc": "image/ruang3_anomali2.png",     "isNVOnly": false, "hitbox": { "top": "15.75%", "left": "8.25%",   "width": "28.40%", "height": "47.36%" } },
+            { "id": "r3_a3", "roomId": 3, "imageSrc": "image/ruang3_anomali3.png",     "isNVOnly": false, "hitbox": { "top": "56.24%", "left": "46.61%", "width": "22.68%", "height": "34.60%" } },
+            { "id": "r3_a9", "roomId": 3, "imageSrc": "image/ruang3_anomali9.jpe.png", "isNVOnly": true,  "hitbox": { "top": "52.31%", "left": "15.64%", "width": "24.70%", "height": "34.35%" } },
+            { "id": "r3_a10","roomId": 3, "imageSrc": "image/ruang3_anomali10.jpe.png","isNVOnly": true,  "hitbox": { "top": "33.17%", "left": "74.63%", "width": "17.51%", "height": "28.22%" } },
+            
+            // RUANG 4
+            { "id": "r4_a1", "roomId": 4, "imageSrc": "image/ruang4_anomali1.jpe.png", "isNVOnly": false, "hitbox": { "top": "9.62%",  "left": "77.21%", "width": "22.12%", "height": "21.35%" } },
+            { "id": "r4_a2", "roomId": 4, "imageSrc": "image/ruang4_anomali2.jpe.png", "isNVOnly": false, "hitbox": { "top": "57.71%", "left": "20.25%", "width": "19.72%", "height": "41.47%" } },
+            { "id": "r4_a3", "roomId": 4, "imageSrc": "image/ruang4_anomali3.jpe.png", "isNVOnly": false, "hitbox": { "top": "45.20%", "left": "48.82%", "width": "17.14%", "height": "30.67%" } },
+            { "id": "r4_a4", "roomId": 4, "imageSrc": "image/ruang4_anomali4.png",     "isNVOnly": false, "hitbox": { "top": "10.00%", "left": "10.00%", "width": "80.00%", "height": "80.00%" } },
+            { "id": "r4_a5", "roomId": 4, "imageSrc": "image/ruang4_anomali5.png",     "isNVOnly": false, "hitbox": { "top": "10.00%", "left": "10.00%", "width": "80.00%", "height": "80.00%" } },
+            { "id": "r4_a6", "roomId": 4, "imageSrc": "image/ruang4_anomali6.jpe.png", "isNVOnly": false, "hitbox": { "top": "10.00%", "left": "10.00%", "width": "80.00%", "height": "80.00%" } },
+            { "id": "r4_a9", "roomId": 4, "imageSrc": "image/ruang4_anomali9.jpe.png", "isNVOnly": true,  "hitbox": { "top": "10.00%", "left": "10.00%", "width": "80.00%", "height": "80.00%" } },
+            
+            // RUANG 6
+            { "id": "r6_a1", "roomId": 6, "imageSrc": "image/ruang6_anomali1.jpe.png", "isNVOnly": false, "hitbox": { "top": "43.72%", "left": "52.69%", "width": "16.04%", "height": "16.69%" } },
+            { "id": "r6_a2", "roomId": 6, "imageSrc": "image/ruang6_anomali2.jpe.png", "isNVOnly": false, "hitbox": { "top": "26.79%", "left": "4.94%",   "width": "12.72%", "height": "16.44%" } },
+            { "id": "r6_a3", "roomId": 6, "imageSrc": "image/ruang6_anomali3.png",     "isNVOnly": false, "hitbox": { "top": "60.66%", "left": "37.57%", "width": "32.64%", "height": "31.90%" } },
+            { "id": "r6_a4", "roomId": 6, "imageSrc": "image/ruang6_anomali4.jpe.png", "isNVOnly": false, "hitbox": { "top": "10.00%", "left": "10.00%", "width": "80.00%", "height": "80.00%" } },
+            { "id": "r6_a5", "roomId": 6, "imageSrc": "image/ruang6_anomali5.png",     "isNVOnly": false, "hitbox": { "top": "10.00%", "left": "10.00%", "width": "80.00%", "height": "80.00%" } },
+
+            // RUANG 7 (DITAMBAHKAN SESUAI FILE DI FOLDER IMAGE)
+            { "id": "r7_a1", "roomId": 7, "imageSrc": "image/ruang7_anomali1.jpe.png", "isNVOnly": false, "hitbox": { "top": "10.00%", "left": "10.00%", "width": "80.00%", "height": "80.00%" } },
+            { "id": "r7_a2", "roomId": 7, "imageSrc": "image/ruang7_anomali2.png",     "isNVOnly": false, "hitbox": { "top": "10.00%", "left": "10.00%", "width": "80.00%", "height": "80.00%" } },
+            { "id": "r7_a9", "roomId": 7, "imageSrc": "image/ruang7_anomali9.jpe.png", "isNVOnly": true,  "hitbox": { "top": "10.00%", "left": "10.00%", "width": "80.00%", "height": "80.00%" } }
         ];
 
-// State Variables
+        // State Variables
         let gameMode = 'normal';
         let maxStrikes = 5;
         let currentRoomIndex = 0;
         let isNVActive = false;
         let activeAnomalies = [];
         let recentAnomalyIds = [];
+        let brokenCamRoomIds = [];
         let strikes = 0;
         let gameActive = false;
         let isReporting = false;
+        let isDangerShowing = false;
+        let dangerTimeout = null;
         let totalGameMs = 0;
         let lastInGameHour = 0;
         
-        // TARUH DI SINI:
-        let statsCleared = []; // Menyimpan anomali yang berhasil dibersihkan
-        let statsGhostlyCount = 0; // Total anomali ghostly (id >= 9 atau isNVOnly)
+        let statsCleared = []; 
+        let statsGhostlyCount = 0; 
 
-        const MS_PER_INGAME_MINUTE = 4000;
+        const MS_PER_INGAME_MINUTE = 3000;
         const TOTAL_INGAME_MINUTES = 360;
         const TOTAL_GAME_DURATION_MS = TOTAL_INGAME_MINUTES * MS_PER_INGAME_MINUTE;
 
@@ -442,10 +483,8 @@
         const dangerWarning = document.getElementById('danger-warning');
         const dangerText = document.getElementById('danger-text');
         const nothingFoundText = document.getElementById('nothing-found-text');
+        const rebootModal = document.getElementById('reboot-modal');
 
-        // ==========================================
-        // SYSTEM PRELOADER & LOADING SCREEN
-        // ==========================================
         const ASSETS_TO_PRELOAD = [
             ...ROOMS.map(r => r.normalImg),
             ...ANOMALY_POOL.map(a => a.imageSrc),
@@ -513,9 +552,6 @@
             });
         }
 
-        // ==========================================
-        // DEV MODE LOGIC
-        // ==========================================
         function accessDevMode() {
             let pass = prompt("MASUKKAN PASSWORD DEV:");
             if (pass === "frieren") {
@@ -652,11 +688,8 @@
             alert("SELURUH DATA HITBOX BERHASIL DISALIN!");
         }
 
-        // ==========================================
-        // GAMEPLAY SYSTEM
-        // ==========================================
         function startTutorialText() {
-            const text = `SYSTEM PROTOCOL:\n\n1. MONITOR CAM 01 TO CAM 06.\n2. SURVIVE FROM 12:00:00 AM TO 06:00:00 AM.\n3. PRESS 'W' TO TOGGLE NIGHT VISION.\n4. SOME ANOMALIES ARE ONLY VISIBLE & REPORTABLE VIA NIGHT VISION.\n5. HOLD LEFT CLICK INSIDE ANOMALY AREA TO REPORT.\n6. MAXIMUM ALLOWED STRIKES: ${maxStrikes}.\n\nGOOD LUCK.`;
+            const text = `SYSTEM PROTOCOL:\n\n1. MONITOR CAM 01 TO CAM 07.\n2. SURVIVE FROM 12:00:00 AM TO 06:00:00 AM.\n3. PRESS 'W' TO TOGGLE NIGHT VISION.\n4. SOME ANOMALIES ARE ONLY VISIBLE & REPORTABLE VIA NIGHT VISION.\n5. HOLD LEFT CLICK INSIDE ANOMALY AREA TO REPORT.\n6. MAXIMUM ALLOWED STRIKES: ${maxStrikes}.\n\nGOOD LUCK.`;
             audioManager.typeWriter(document.getElementById('typewriter-text'), text, 20, () => {
                 document.getElementById('btn-start-game').style.display = 'inline-block';
             });
@@ -667,22 +700,37 @@
             gameActive = true;
             isWitchHourNotified = false;
             recentAnomalyIds = [];
+            brokenCamRoomIds = [];
+            statsCleared = [];
+            statsGhostlyCount = 0;
+            totalGameMs = 0;
+            lastInGameHour = 0;
+            strikes = 0;
+            strikeDisplay.innerText = `0/${maxStrikes}`;
+            
             updateCameraView();
             startRealtimeClock();
             
-            audioManager.startAmbience(30000);
+            audioManager.startAmbience(120000);
             
             setTimeout(() => {
                 if (gameActive) {
                     spawnAnomaly(); 
                     scheduleNextAnomaly();
                 }
-            }, 30000);
+            }, 10000);
         });
 
         function updateCameraView() {
             let room = ROOMS[currentRoomIndex];
             camNameDisplay.innerText = room.name;
+
+            if (brokenCamRoomIds.includes(room.id)) {
+                viewport.src = "data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='800' height='450'><rect width='800' height='450' fill='black'/><text x='50%' y='50%' fill='red' font-family='monospace' font-size='20' dominant-baseline='middle' text-anchor='middle'>[ SIGNAL LOST - CAMERA OFFLINE ]</text></svg>";
+                hitbox.style.display = 'none';
+                viewport.style.filter = "none";
+                return;
+            }
 
             const activeAnomaly = activeAnomalies.find(a => a.roomId === room.id);
 
@@ -714,38 +762,33 @@
             checkDangerStatus();
         }
 
-        let dangerTimeout = null; // Menyimpan timer overlay
+        function checkDangerStatus() {
+            if (activeAnomalies.length >= 3) {
+                if (!isDangerShowing) {
+                    isDangerShowing = true;
+                    dangerWarning.style.display = 'block';
+                    const warningMsg = "Too-much-anomalies!! You-were-in-danger";
+                    audioManager.typeWriter(dangerText, warningMsg, 40);
 
-function checkDangerStatus() {
-    if (activeAnomalies.length >= 3) {
-        if (!isDangerShowing) {
-            isDangerShowing = true;
-            dangerWarning.style.display = 'block';
-            const warningMsg = "Too-much-anomalies!! You-were-in-danger";
-            audioManager.typeWriter(dangerText, warningMsg, 40);
+                    const duration = Math.floor(Math.random() * (5000 - 3000 + 1)) + 3000;
 
-            // Acak durasi tampil antara 3000ms - 5000ms (3-5 detik)
-            const duration = Math.floor(Math.random() * (5000 - 3000 + 1)) + 3000;
-
-            // Paksa hilang otomatis setelah durasi habis
-            dangerTimeout = setTimeout(() => {
-                dangerWarning.style.display = 'none';
-                dangerText.innerText = "";
-                isDangerShowing = false;
-            }, duration);
+                    dangerTimeout = setTimeout(() => {
+                        dangerWarning.style.display = 'none';
+                        dangerText.innerText = "";
+                        isDangerShowing = false;
+                    }, duration);
+                }
+            } else {
+                if (isDangerShowing) {
+                    clearTimeout(dangerTimeout);
+                    isDangerShowing = false;
+                    dangerWarning.style.display = 'none';
+                    dangerText.innerText = "";
+                }
+            }
         }
-    } else {
-        // Jika anomali berkurang sebelum timer habis, langsung bersihkan
-        if (isDangerShowing) {
-            clearTimeout(dangerTimeout);
-            isDangerShowing = false;
-            dangerWarning.style.display = 'none';
-            dangerText.innerText = "";
-        }
-    }
-}
 
-       let lastTime = null;
+        let lastTime = null;
         function startRealtimeClock() {
             lastTime = performance.now();
             function updateClock(now) {
@@ -772,20 +815,15 @@ function checkDangerStatus() {
 
                 timeDisplay.innerText = `${strH}:${strM}:${strS} AM`;
 
-                // ==========================================
-                // BAGIAN INI YANG DIGANTI / DITIMPA
-                // ==========================================
                 if (totalGameMs >= TOTAL_GAME_DURATION_MS) {
                     gameActive = false;
                     audioManager.stopAmbience();
                     timeDisplay.innerText = "06:00:00 AM";
-                    audioManager.playBell(); // Bunyi bel penanda jam 6
+                    audioManager.playBell();
                     
-                    // Tampilkan Laporan Shift
-                    showShiftReport();
+                    showShiftReport(); 
                     return;
                 }
-                // ==========================================
 
                 requestAnimationFrame(updateClock);
             }
@@ -794,13 +832,17 @@ function checkDangerStatus() {
 
         document.getElementById('btn-prev').addEventListener('click', () => {
             if (isReporting) return;
-            currentRoomIndex = (currentRoomIndex - 1 + ROOMS.length) % ROOMS.length;
+            do {
+                currentRoomIndex = (currentRoomIndex - 1 + ROOMS.length) % ROOMS.length;
+            } while (brokenCamRoomIds.includes(ROOMS[currentRoomIndex].id) && brokenCamRoomIds.length < ROOMS.length);
             updateCameraView();
         });
 
         document.getElementById('btn-next').addEventListener('click', () => {
             if (isReporting) return;
-            currentRoomIndex = (currentRoomIndex + 1) % ROOMS.length;
+            do {
+                currentRoomIndex = (currentRoomIndex + 1) % ROOMS.length;
+            } while (brokenCamRoomIds.includes(ROOMS[currentRoomIndex].id) && brokenCamRoomIds.length < ROOMS.length);
             updateCameraView();
         });
 
@@ -833,20 +875,17 @@ function checkDangerStatus() {
                 isWitchHourNotified = true;
             }
 
-            let minDelay = 40000;
-            let maxDelay = 80000;
-
-            if (gameMode === 'hard') {
-                minDelay = 20000;
-                maxDelay = 40000;
-            }
+            let minDelay = 20000;
+            let maxDelay = 40000;
 
             if (isWitchHour) {
-                minDelay = minDelay / 2;
-                maxDelay = maxDelay / 2;
+                minDelay = 10000;
+                maxDelay = 20000;
             }
 
             const randomDelay = Math.floor(Math.random() * (maxDelay - minDelay + 1)) + minDelay;
+
+            if (anomalyTimer) clearTimeout(anomalyTimer);
 
             anomalyTimer = setTimeout(() => {
                 if (gameActive) {
@@ -864,32 +903,80 @@ function checkDangerStatus() {
         }
 
         function spawnAnomaly() {
-    if (!gameActive) return;
+            if (!gameActive) return;
 
-    // 1. Filter anomali yang belum aktif di game DAN tidak ada di daftar 8 anomali terakhir
-    const available = ANOMALY_POOL.filter(a => 
-        !activeAnomalies.some(act => act.roomId === a.roomId) && // 1 room max 1 anomali
-        !recentAnomalyIds.includes(a.id)                        // Tidak boleh ada dalam 8 turn terakhir
-    );
+            if (Math.random() < 0.20 && brokenCamRoomIds.length < 2) {
+                let currentRoomId = ROOMS[currentRoomIndex].id;
+                let candidateRooms = ROOMS.filter(r => r.id !== currentRoomId && !brokenCamRoomIds.includes(r.id));
+                if (candidateRooms.length > 0) {
+                    let chosenRoom = candidateRooms[Math.floor(Math.random() * candidateRooms.length)];
+                    brokenCamRoomIds.push(chosenRoom.id);
+                    return;
+                }
+            }
 
-    if (available.length > 0) {
-        // Pilih anomali secara acak dari yang tersedia
-        const chosen = available[Math.floor(Math.random() * available.length)];
-        activeAnomalies.push(chosen);
+            const currentViewingRoomId = ROOMS[currentRoomIndex].id;
 
-        // Catat ID ke riwayat
-        recentAnomalyIds.push(chosen.id);
+            const available = ANOMALY_POOL.filter(a => 
+                a.roomId !== currentViewingRoomId && 
+                !activeAnomalies.some(act => act.roomId === a.roomId) && 
+                !recentAnomalyIds.includes(a.id)                        
+            );
 
-        // Kunci maksimal 8 riwayat anomali terakhir
-        if (recentAnomalyIds.length > 8) {
-            recentAnomalyIds.shift(); // Hapus anomali terlama jika sudah lebih dari 8
+            if (available.length > 0) {
+                const chosen = available[Math.floor(Math.random() * available.length)];
+                activeAnomalies.push(chosen);
+
+                recentAnomalyIds.push(chosen.id);
+
+                if (recentAnomalyIds.length > 8) {
+                    recentAnomalyIds.shift(); 
+                }
+
+                updateCameraView();
+            }
         }
 
-        updateCameraView();
-    }
-}
+        function toggleRebootModal() {
+            if (!gameActive || isReporting) return;
+            const currentDisplay = rebootModal.style.display;
+            rebootModal.style.display = (currentDisplay === 'flex') ? 'none' : 'flex';
+        }
 
-        // REPORT SYSTEM
+        document.getElementById('btn-reboot-menu').addEventListener('click', toggleRebootModal);
+
+        function executeReboot(camId) {
+            toggleRebootModal();
+            isReporting = true;
+
+            const reportScreenText = document.getElementById('report-screen-text');
+            reportScreenText.innerText = `REBOOTING CAM 0${camId}...`;
+            reportScreen.style.display = 'flex';
+
+            setTimeout(() => {
+                reportScreen.style.display = 'none';
+                reportScreenText.innerText = "REPORT IN PROGRESS...";
+                isReporting = false;
+
+                if (brokenCamRoomIds.includes(camId)) {
+                    brokenCamRoomIds = brokenCamRoomIds.filter(id => id !== camId);
+                    alert(`CAM 0${camId} REBOOT SUCCESSFUL! SIGNAL RESTORED.`);
+                    updateCameraView();
+                } else {
+                    strikes++;
+                    strikeDisplay.innerText = `${strikes}/${maxStrikes}`;
+                    alert("FAILED TO REBOOT: CAMERA IS NOT BROKEN!");
+                    
+                    if (strikes >= maxStrikes) {
+                        gameActive = false;
+                        if (anomalyTimer) clearTimeout(anomalyTimer);
+                        audioManager.stopAmbience();
+                        alert("GAME OVER: TOO MANY INCORRECT REPORTS/REBOOTS!");
+                    }
+                }
+            }, 3000);
+        }
+
         let holdTimer = null;
         let holdProgress = 140;
         let isClickingHitbox = false;
@@ -912,6 +999,7 @@ function checkDangerStatus() {
 
                 if (holdProgress <= 0) {
                     clearInterval(holdTimer);
+                    holdTimer = null;
                     processReport();
                 }
             }, 100);
@@ -929,7 +1017,10 @@ function checkDangerStatus() {
         window.addEventListener('mouseup', cancelHold);
 
         function cancelHold() {
-            if (holdTimer) clearInterval(holdTimer);
+            if (holdTimer) {
+                clearInterval(holdTimer);
+                holdTimer = null;
+            }
             progressRing.style.display = 'none';
         }
 
@@ -944,26 +1035,23 @@ function checkDangerStatus() {
             });
         }
 
-       function processReport() {
-            cancelHold(); //[cite: 3]
-            isReporting = true; //[cite: 3]
+        function processReport() {
+            cancelHold();
+            isReporting = true;
 
-            const currentRoom = ROOMS[currentRoomIndex]; //[cite: 3]
-            const anomalyIndex = activeAnomalies.findIndex(a => a.roomId === currentRoom.id); //[cite: 3]
+            const currentRoom = ROOMS[currentRoomIndex];
+            const anomalyIndex = activeAnomalies.findIndex(a => a.roomId === currentRoom.id);
 
-            let isCorrectReport = false; //[cite: 3]
+            let isCorrectReport = false;
 
-            if (anomalyIndex !== -1 && isClickingHitbox) { //[cite: 3]
-                const anomaly = activeAnomalies[anomalyIndex]; //[cite: 3]
-                if (!anomaly.isNVOnly || (anomaly.isNVOnly && isNVActive)) { //[cite: 3]
-                    isCorrectReport = true; //[cite: 3]
+            if (anomalyIndex !== -1 && isClickingHitbox) {
+                const anomaly = activeAnomalies[anomalyIndex];
+                if (!anomaly.isNVOnly || (anomaly.isNVOnly && isNVActive)) {
+                    isCorrectReport = true;
                 }
             }
 
             if (isCorrectReport) {
-                // ==========================================
-                // TAMBAHKAN BAGIAN INI (PENCATATAN STATISTIK)
-                // ==========================================
                 const anomaly = activeAnomalies[anomalyIndex];
                 statsCleared.push(anomaly);
                 
@@ -971,102 +1059,101 @@ function checkDangerStatus() {
                 if (anomaly.isNVOnly || anomalyNum >= 9) {
                     statsGhostlyCount++;
                 }
-                // ==========================================
 
-                reportScreen.style.display = 'flex'; //[cite: 3]
-                audioManager.startReportSound(); //[cite: 3]
+                reportScreen.style.display = 'flex';
+                audioManager.startReportSound();
 
                 setTimeout(() => {
-                    audioManager.stopReportSound(); //[cite: 3]
-                    activeAnomalies.splice(anomalyIndex, 1); //[cite: 3]
-                    strikes = 0; //[cite: 3]
-                    strikeDisplay.innerText = `0/${maxStrikes}`; //[cite: 3]
-                    updateCameraView(); //[cite: 3]
+                    audioManager.stopReportSound();
+                    activeAnomalies.splice(anomalyIndex, 1);
+                    strikes = 0;
+                    strikeDisplay.innerText = `0/${maxStrikes}`;
+                    updateCameraView();
 
                     setTimeout(() => {
-                        reportScreen.style.display = 'none'; //[cite: 3]
-                        isReporting = false; //[cite: 3]
-                    }, 300); //[cite: 3]
+                        reportScreen.style.display = 'none';
+                        isReporting = false;
+                    }, 300);
 
-                }, 1200); //[cite: 3]
+                }, 1200);
             } else {
-                strikes++; //[cite: 3]
-                strikeDisplay.innerText = `${strikes}/${maxStrikes}`; //[cite: 3]
+                strikes++;
+                strikeDisplay.innerText = `${strikes}/${maxStrikes}`;
                 
-                if (strikes >= maxStrikes) { //[cite: 3]
-                    gameActive = false; //[cite: 3]
-                    audioManager.stopAmbience(); //[cite: 3]
-                    alert("GAME OVER: TOO MANY INCORRECT REPORTS!"); //[cite: 3]
-                    isReporting = false; //[cite: 3]
-                    return; //[cite: 3]
+                if (strikes >= maxStrikes) {
+                    gameActive = false;
+                    if (anomalyTimer) clearTimeout(anomalyTimer);
+                    audioManager.stopAmbience();
+                    alert("GAME OVER: TOO MANY INCORRECT REPORTS!");
+                    isReporting = false;
+                    return;
                 }
 
-                showNothingFoundMessage(); //[cite: 3]
+                showNothingFoundMessage();
             }
         }
+
         function showShiftReport() {
-    // 1. Ambil data missed anomalies (anomali yang masih tersisa saat jam 6)
-    const missedAnomalies = [...activeAnomalies];
+            if (anomalyTimer) clearTimeout(anomalyTimer);
+            
+            const missedAnomalies = [...activeAnomalies];
 
-    // 2. Update HUD & Rekap
-    document.getElementById('rpt-strikes').innerText = `${strikes}/${maxStrikes}`;
-    document.getElementById('rpt-cleared-count').innerText = statsCleared.length;
-    document.getElementById('rpt-ghostly-count').innerText = statsGhostlyCount;
-    document.getElementById('rpt-missed-count').innerText = missedAnomalies.length;
+            document.getElementById('rpt-strikes').innerText = `${strikes}/${maxStrikes}`;
+            document.getElementById('rpt-cleared-count').innerText = statsCleared.length;
+            document.getElementById('rpt-ghostly-count').innerText = statsGhostlyCount;
+            document.getElementById('rpt-missed-count').innerText = missedAnomalies.length;
 
-    // 3. Render List Cleared
-    const clearedListEl = document.getElementById('rpt-cleared-list');
-    clearedListEl.innerHTML = "";
-    if (statsCleared.length === 0) {
-        clearedListEl.innerHTML = "<li>- NO ANOMALIES DETECTED/CLEARED</li>";
-    } else {
-        statsCleared.forEach(a => {
-            const room = ROOMS.find(r => r.id === a.roomId);
-            const isGhost = a.isNVOnly || parseInt(a.id.split('_a')[1]) >= 9;
-            clearedListEl.innerHTML += `<li>> [${a.id.toUpperCase()}] ${room.name} ${isGhost ? '<span class="text-ghostly">(GHOSTLY)</span>' : ''}</li>`;
-        });
-    }
+            const clearedListEl = document.getElementById('rpt-cleared-list');
+            clearedListEl.innerHTML = "";
+            if (statsCleared.length === 0) {
+                clearedListEl.innerHTML = "<li>- NO ANOMALIES DETECTED/CLEARED</li>";
+            } else {
+                const uniqueCleared = Array.from(new Set(statsCleared.map(a => a.id))).map(id => statsCleared.find(a => a.id === id));
+                uniqueCleared.forEach(a => {
+                    const room = ROOMS.find(r => r.id === a.roomId);
+                    const isGhost = a.isNVOnly || parseInt(a.id.split('_a')[1]) >= 9;
+                    clearedListEl.innerHTML += `<li>> [${a.id.toUpperCase()}] ${room.name} ${isGhost ? '<span class="text-ghostly">(GHOSTLY)</span>' : ''}</li>`;
+                });
+            }
 
-    // 4. Render List Missed
-    const missedListEl = document.getElementById('rpt-missed-list');
-    missedListEl.innerHTML = "";
-    if (missedAnomalies.length === 0) {
-        missedListEl.innerHTML = "<li style='color:#00ff00;'>+ PERFECT SHIFT! NO MISSED ANOMALIES.</li>";
-    } else {
-        missedAnomalies.forEach(a => {
-            const room = ROOMS.find(r => r.id === a.roomId);
-            missedListEl.innerHTML += `<li class="text-missed">> [${a.id.toUpperCase()}] ${room.name} UNRESOLVED!</li>`;
-        });
-    }
+            const missedListEl = document.getElementById('rpt-missed-list');
+            missedListEl.innerHTML = "";
+            if (missedAnomalies.length === 0) {
+                missedListEl.innerHTML = "<li style='color:#00ff00;'>+ PERFECT SHIFT! NO MISSED ANOMALIES.</li>";
+            } else {
+                const uniqueMissed = Array.from(new Set(missedAnomalies.map(a => a.id))).map(id => missedAnomalies.find(a => a.id === id));
+                uniqueMissed.forEach(a => {
+                    const room = ROOMS.find(r => r.id === a.roomId);
+                    missedListEl.innerHTML += `<li class="text-missed">> [${a.id.toUpperCase()}] ${room.name} UNRESOLVED!</li>`;
+                });
+            }
 
-    // 5. SOP Evaluation
-    const sopEl = document.getElementById('rpt-sop-eval');
-    if (strikes === 0 && missedAnomalies.length === 0) {
-        sopEl.innerText = "SOP GRADE A: EXCELLENT PERFORMANCE. FULL PROTOCOL ADHERENCE.";
-    } else if (missedAnomalies.length <= 2) {
-        sopEl.innerText = "SOP GRADE B: ACCEPTABLE SHIFT. MINOR UNRESOLVED THREATS DETECTED.";
-    } else {
-        sopEl.innerText = "SOP GRADE C: POOR PERFORMANCE. TOO MANY ANOMALIES LEFT UNCHECKED.";
-    }
+            const sopEl = document.getElementById('rpt-sop-eval');
+            if (strikes === 0 && missedAnomalies.length === 0) {
+                sopEl.innerText = "SOP GRADE A: EXCELLENT PERFORMANCE. FULL PROTOCOL ADHERENCE.";
+            } else if (missedAnomalies.length <= 2) {
+                sopEl.innerText = "SOP GRADE B: ACCEPTABLE SHIFT. MINOR UNRESOLVED THREATS DETECTED.";
+            } else {
+                sopEl.innerText = "SOP GRADE C: POOR PERFORMANCE. TOO MANY ANOMALIES LEFT UNCHECKED.";
+            }
 
-    // Tampilkan Screen Laporan
-    document.getElementById('shift-report-screen').style.display = 'flex';
-}
+            document.getElementById('shift-report-screen').style.display = 'flex';
+        }
 
-function endShiftAndGoToLobby() {
-    // Reset Data Game
-    activeAnomalies = [];
-    recentAnomalyIds = [];
-    statsCleared = [];
-    statsGhostlyCount = 0;
-    strikes = 0;
-    totalGameMs = 0;
-    lastInGameHour = 0;
-    
-    // Sembunyikan Screen Laporan & Reset Tampilan UI ke Lobby
-    document.getElementById('shift-report-screen').style.display = 'none';
-    document.getElementById('screen-menu').style.display = 'flex';
-}
+        function endShiftAndGoToLobby() {
+            activeAnomalies = [];
+            recentAnomalyIds = [];
+            brokenCamRoomIds = [];
+            statsCleared = [];
+            statsGhostlyCount = 0;
+            strikes = 0;
+            totalGameMs = 0;
+            lastInGameHour = 0;
+            timeDisplay.innerText = "12:00:00 AM";
+            
+            document.getElementById('shift-report-screen').style.display = 'none';
+            document.getElementById('screen-menu').style.display = 'flex';
+        }
     </script>
 </body>
 </html>
