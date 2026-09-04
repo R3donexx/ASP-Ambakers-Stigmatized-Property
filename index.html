@@ -16,9 +16,16 @@
             position: relative; width: 100vw; height: 100vh; background: #000;
             display: flex; justify-content: center; align-items: center; overflow: hidden;
         }
-        #viewport-wrapper { position: relative; display: inline-block; max-width: 95vw; max-height: 90vh; }
+        #viewport-wrapper { 
+            position: relative; 
+            display: flex; 
+            justify-content: center; 
+            align-items: center; 
+            width: 100%; 
+            height: 100%; 
+        }
         #viewport {
-            max-width: 95vw; max-height: 90vh; width: auto; height: auto;
+            max-width: 95vw; max-height: 85vh; width: auto; height: auto;
             object-fit: contain; display: block; border: 2px solid #222; box-shadow: 0 0 15px rgba(0,0,0,0.9);
             cursor: default;
         }
@@ -99,7 +106,6 @@
             box-shadow: 0 0 10px #ff0000; pointer-events: none;
         }
 
-        /* REBOOT MODAL (DISESUAIKAN UNTUK 7 KAMERA) */
         #reboot-modal {
             position: absolute; bottom: 70px; right: 20px; background: rgba(0,0,0,0.95);
             border: 2px solid #00ffff; padding: 15px; z-index: 100; display: none; flex-direction: column;
@@ -385,68 +391,54 @@
 
         const audioManager = new AudioManager();
 
-        // ==========================================
-        // DATA RUANG & ANOMALI (DIPERBARUI SESPASAI BUKTI GAMBAR FILE)
-        // ==========================================
         const ROOMS = [
-            { id: 1, name: "CAM 01 - LIVING ROOM", normalImg: "image/ruang1_normal.png" },
-            { id: 2, name: "CAM 02 - TOILET", normalImg: "image/ruang2_normal.png" },
-            { id: 3, name: "CAM 03 - STORAGE", normalImg: "image/ruang3_normal.png" },
-            { id: 4, name: "CAM 04 - KITCHEN", normalImg: "image/ruang4_normal.png" },
-            { id: 5, name: "CAM 05 - BEDROOM 1", normalImg: "image/ruang5_normal.png" },
-            { id: 6, name: "CAM 06 - WORKSPACE", normalImg: "image/ruang6_normal.png" },
-            { id: 7, name: "CAM 07 - BEDROOM 2", normalImg: "image/ruang7_normal.png" }
+            { id: 1, name: "CAM 01 - LIVING ROOM", normalImg: "image/ruang1.png" },
+            { id: 2, name: "CAM 02 - TOILET", normalImg: "image/ruang2.png" },
+            { id: 3, name: "CAM 03 - STORAGE", normalImg: "image/ruang3.png" },
+            { id: 4, name: "CAM 04 - KITCHEN", normalImg: "image/ruang4.png" },
+            { id: 6, name: "CAM 06 - WORKSPACE", normalImg: "image/ruang6.png" },
+            { id: 7, name: "CAM 07 - BEDROOM 2", normalImg: "image/ruang7.png" }
         ];
 
+        // DATASET ANOMALI TERBARU SESUAI KOORDINAT PRESISI
         const ANOMALY_POOL = [
-            // RUANG 1
-            { "id": "r1_a1", "roomId": 1, "imageSrc": "image/ruang1_anomali1.jpe.png", "isNVOnly": false, "hitbox": { "top": "3.48%", "left": "9.92%", "width": "44.06%", "height": "28.46%" } },
-            { "id": "r1_a2", "roomId": 1, "imageSrc": "image/ruang1_anomali2.jpe.png", "isNVOnly": false, "hitbox": { "top": "41.52%", "left": "30.57%", "width": "12.35%", "height": "30.18%" } },
-            { "id": "r1_a3", "roomId": 1, "imageSrc": "image/ruang1_anomali3.jpe.png", "isNVOnly": false, "hitbox": { "top": "59.67%", "left": "81.63%", "width": "8.85%", "height": "12.51%" } },
-            { "id": "r1_a4", "roomId": 1, "imageSrc": "image/ruang1_anomali4.jpe.png", "isNVOnly": false, "hitbox": { "top": "30.23%", "left": "69.83%", "width": "13.09%", "height": "8.34%" } },
-            { "id": "r1_a5", "roomId": 1, "imageSrc": "image/ruang1_anomali5.jpe.png", "isNVOnly": false, "hitbox": { "top": "34.40%", "left": "8.63%", "width": "25.44%", "height": "44.90%" } },
-            { "id": "r1_a6", "roomId": 1, "imageSrc": "image/ruang1_anomali6.jpe.png", "isNVOnly": false, "hitbox": { "top": "51.33%", "left": "64.30%", "width": "8.11%", "height": "8.59%" } },
-            { "id": "r1_a7", "roomId": 1, "imageSrc": "image/ruang1_anomali7.jpe.png", "isNVOnly": false, "hitbox": { "top": "55.26%", "left": "27.80%", "width": "61.20%", "height": "45.14%" } },
-            { "id": "r1_a8", "roomId": 1, "imageSrc": "image/ruang1_anomali8.jpe.png", "isNVOnly": false, "hitbox": { "top": "43.23%", "left": "42.55%", "width": "8.48%", "height": "15.95%" } },
-            { "id": "r1_a9", "roomId": 1, "imageSrc": "image/ruang1_anomali9.jpe.png", "isNVOnly": true,  "hitbox": { "top": "20.66%", "left": "59.88%", "width": "40.19%", "height": "79.25%" } },
-            
-            // RUANG 2
-            { "id": "r2_a1", "roomId": 2, "imageSrc": "image/ruang2_anomali1.jpe.png", "isNVOnly": false, "hitbox": { "top": "30.72%", "left": "58.77%", "width": "15.48%", "height": "51.53%" } },
-            { "id": "r2_a2", "roomId": 2, "imageSrc": "image/ruang2_anomali2.jpe.png", "isNVOnly": false, "hitbox": { "top": "66.05%", "left": "10.84%", "width": "27.84%", "height": "34.34%" } },
-            { "id": "r2_a3", "roomId": 2, "imageSrc": "image/ruang2_anomali3.jpe.png", "isNVOnly": false, "hitbox": { "top": "90.84%", "left": "33.33%", "width": "28.39%", "height": "9.56%" } },
-            { "id": "r2_a4", "roomId": 2, "imageSrc": "image/ruang2_anomali4.jpe.png", "isNVOnly": false, "hitbox": { "top": "0.78%",  "left": "0.34%",   "width": "98.81%", "height": "18.65%" } },
-            { "id": "r2_a5", "roomId": 2, "imageSrc": "image/ruang2_anomali5.png",     "isNVOnly": false, "hitbox": { "top": "26.79%", "left": "58.22%", "width": "28.95%", "height": "57.91%" } },
-            { "id": "r2_a6", "roomId": 2, "imageSrc": "image/ruang2_anomali6.jpe.png", "isNVOnly": false, "hitbox": { "top": "67.28%", "left": "8.45%",   "width": "16.04%", "height": "12.51%" } },
-            { "id": "r2_a7", "roomId": 2, "imageSrc": "image/ruang2_anomali7.jpe.png", "isNVOnly": false, "hitbox": { "top": "10.00%", "left": "10.00%", "width": "80.00%", "height": "80.00%" } },
-            { "id": "r2_a9", "roomId": 2, "imageSrc": "image/ruang2_anomali9.jpe.png", "isNVOnly": true,  "hitbox": { "top": "37.10%", "left": "21.90%", "width": "21.75%", "height": "57.91%" } },
-            
-            // RUANG 3
-            { "id": "r3_a1", "roomId": 3, "imageSrc": "image/ruang3_anomali1.jpe.png", "isNVOnly": false, "hitbox": { "top": "54.28%", "left": "69.28%", "width": "9.03%",  "height": "12.76%" } },
-            { "id": "r3_a2", "roomId": 3, "imageSrc": "image/ruang3_anomali2.png",     "isNVOnly": false, "hitbox": { "top": "15.75%", "left": "8.25%",   "width": "28.40%", "height": "47.36%" } },
-            { "id": "r3_a3", "roomId": 3, "imageSrc": "image/ruang3_anomali3.png",     "isNVOnly": false, "hitbox": { "top": "56.24%", "left": "46.61%", "width": "22.68%", "height": "34.60%" } },
-            { "id": "r3_a9", "roomId": 3, "imageSrc": "image/ruang3_anomali9.jpe.png", "isNVOnly": true,  "hitbox": { "top": "52.31%", "left": "15.64%", "width": "24.70%", "height": "34.35%" } },
-            { "id": "r3_a10","roomId": 3, "imageSrc": "image/ruang3_anomali10.jpe.png","isNVOnly": true,  "hitbox": { "top": "33.17%", "left": "74.63%", "width": "17.51%", "height": "28.22%" } },
-            
-            // RUANG 4
-            { "id": "r4_a1", "roomId": 4, "imageSrc": "image/ruang4_anomali1.jpe.png", "isNVOnly": false, "hitbox": { "top": "9.62%",  "left": "77.21%", "width": "22.12%", "height": "21.35%" } },
-            { "id": "r4_a2", "roomId": 4, "imageSrc": "image/ruang4_anomali2.jpe.png", "isNVOnly": false, "hitbox": { "top": "57.71%", "left": "20.25%", "width": "19.72%", "height": "41.47%" } },
-            { "id": "r4_a3", "roomId": 4, "imageSrc": "image/ruang4_anomali3.jpe.png", "isNVOnly": false, "hitbox": { "top": "45.20%", "left": "48.82%", "width": "17.14%", "height": "30.67%" } },
-            { "id": "r4_a4", "roomId": 4, "imageSrc": "image/ruang4_anomali4.png",     "isNVOnly": false, "hitbox": { "top": "10.00%", "left": "10.00%", "width": "80.00%", "height": "80.00%" } },
-            { "id": "r4_a5", "roomId": 4, "imageSrc": "image/ruang4_anomali5.png",     "isNVOnly": false, "hitbox": { "top": "10.00%", "left": "10.00%", "width": "80.00%", "height": "80.00%" } },
-            { "id": "r4_a6", "roomId": 4, "imageSrc": "image/ruang4_anomali6.jpe.png", "isNVOnly": false, "hitbox": { "top": "10.00%", "left": "10.00%", "width": "80.00%", "height": "80.00%" } },
-            { "id": "r4_a9", "roomId": 4, "imageSrc": "image/ruang4_anomali9.jpe.png", "isNVOnly": true,  "hitbox": { "top": "10.00%", "left": "10.00%", "width": "80.00%", "height": "80.00%" } },
-            
-            // RUANG 6
-            { "id": "r6_a1", "roomId": 6, "imageSrc": "image/ruang6_anomali1.jpe.png", "isNVOnly": false, "hitbox": { "top": "43.72%", "left": "52.69%", "width": "16.04%", "height": "16.69%" } },
-            { "id": "r6_a2", "roomId": 6, "imageSrc": "image/ruang6_anomali2.jpe.png", "isNVOnly": false, "hitbox": { "top": "26.79%", "left": "4.94%",   "width": "12.72%", "height": "16.44%" } },
-            { "id": "r6_a3", "roomId": 6, "imageSrc": "image/ruang6_anomali3.png",     "isNVOnly": false, "hitbox": { "top": "60.66%", "left": "37.57%", "width": "32.64%", "height": "31.90%" } },
-            { "id": "r6_a4", "roomId": 6, "imageSrc": "image/ruang6_anomali4.jpe.png", "isNVOnly": false, "hitbox": { "top": "10.00%", "left": "10.00%", "width": "80.00%", "height": "80.00%" } },
-            { "id": "r6_a5", "roomId": 6, "imageSrc": "image/ruang6_anomali5.png",     "isNVOnly": false, "hitbox": { "top": "10.00%", "left": "10.00%", "width": "80.00%", "height": "80.00%" } },
-
-            // RUANG 7 (DITAMBAHKAN SESUAI FILE DI FOLDER IMAGE)
-            { "id": "r7_a1", "roomId": 7, "imageSrc": "image/ruang7_anomali1.jpe.png", "isNVOnly": false, "hitbox": { "top": "10.00%", "left": "10.00%", "width": "80.00%", "height": "80.00%" } },
-            { "id": "r7_a2", "roomId": 7, "imageSrc": "image/ruang7_anomali2.png",     "isNVOnly": false, "hitbox": { "top": "10.00%", "left": "10.00%", "width": "80.00%", "height": "80.00%" } },
-            { "id": "r7_a9", "roomId": 7, "imageSrc": "image/ruang7_anomali9.jpe.png", "isNVOnly": true,  "hitbox": { "top": "10.00%", "left": "10.00%", "width": "80.00%", "height": "80.00%" } }
+            {"id":"r1_a1","roomId":1,"imageSrc":"image/ruang1_anomali1.jpe.png","isNVOnly":false,"hitbox":{"top":"3.48%","left":"9.92%","width":"44.06%","height":"28.46%"}},
+            {"id":"r1_a2","roomId":1,"imageSrc":"image/ruang1_anomali2.jpe.png","isNVOnly":false,"hitbox":{"top":"41.52%","left":"30.57%","width":"12.35%","height":"30.18%"}},
+            {"id":"r1_a3","roomId":1,"imageSrc":"image/ruang1_anomali3.jpe.png","isNVOnly":false,"hitbox":{"top":"59.67%","left":"81.63%","width":"8.85%","height":"12.51%"}},
+            {"id":"r1_a4","roomId":1,"imageSrc":"image/ruang1_anomali4.jpe.png","isNVOnly":false,"hitbox":{"top":"30.23%","left":"69.83%","width":"13.09%","height":"8.34%"}},
+            {"id":"r1_a5","roomId":1,"imageSrc":"image/ruang1_anomali5.jpe.png","isNVOnly":false,"hitbox":{"top":"34.40%","left":"8.63%","width":"25.44%","height":"44.90%"}},
+            {"id":"r1_a6","roomId":1,"imageSrc":"image/ruang1_anomali6.jpe.png","isNVOnly":false,"hitbox":{"top":"51.33%","left":"64.30%","width":"8.11%","height":"8.59%"}},
+            {"id":"r1_a7","roomId":1,"imageSrc":"image/ruang1_anomali7.jpe.png","isNVOnly":false,"hitbox":{"top":"55.26%","left":"27.80%","width":"61.20%","height":"45.14%"}},
+            {"id":"r1_a8","roomId":1,"imageSrc":"image/ruang1_anomali8.jpe.png","isNVOnly":false,"hitbox":{"top":"43.23%","left":"42.55%","width":"8.48%","height":"15.95%"}},
+            {"id":"r1_a9","roomId":1,"imageSrc":"image/ruang1_anomali9.jpe.png","isNVOnly":true,"hitbox":{"top":"20.66%","left":"59.88%","width":"40.19%","height":"79.25%"}},
+            {"id":"r2_a1","roomId":2,"imageSrc":"image/ruang2_anomali1.jpe.png","isNVOnly":false,"hitbox":{"top":"30.72%","left":"58.77%","width":"15.48%","height":"51.53%"}},
+            {"id":"r2_a2","roomId":2,"imageSrc":"image/ruang2_anomali2.jpe.png","isNVOnly":false,"hitbox":{"top":"66.05%","left":"10.84%","width":"27.84%","height":"34.34%"}},
+            {"id":"r2_a3","roomId":2,"imageSrc":"image/ruang2_anomali3.jpe.png","isNVOnly":false,"hitbox":{"top":"90.84%","left":"33.33%","width":"28.39%","height":"9.56%"}},
+            {"id":"r2_a4","roomId":2,"imageSrc":"image/ruang2_anomali4.jpe.png","isNVOnly":false,"hitbox":{"top":"0.78%","left":"0.34%","width":"98.81%","height":"18.65%"}},
+            {"id":"r2_a5","roomId":2,"imageSrc":"image/ruang2_anomali5.png","isNVOnly":false,"hitbox":{"top":"26.79%","left":"58.22%","width":"28.95%","height":"57.91%"}},
+            {"id":"r2_a6","roomId":2,"imageSrc":"image/ruang2_anomali6.jpe.png","isNVOnly":false,"hitbox":{"top":"67.28%","left":"8.45%","width":"16.04%","height":"12.51%"}},
+            {"id":"r2_a7","roomId":2,"imageSrc":"image/ruang2_anomali7.jpe.png","isNVOnly":false,"hitbox":{"top":"3.48%","left":"0.69%","width":"51.63%","height":"84.90%"}},
+            {"id":"r2_a9","roomId":2,"imageSrc":"image/ruang2_anomali9.jpe.png","isNVOnly":true,"hitbox":{"top":"37.10%","left":"21.90%","width":"21.75%","height":"57.91%"}},
+            {"id":"r3_a1","roomId":3,"imageSrc":"image/ruang3_anomali1.jpe.png","isNVOnly":false,"hitbox":{"top":"54.28%","left":"69.28%","width":"9.03%","height":"12.76%"}},
+            {"id":"r3_a2","roomId":3,"imageSrc":"image/ruang3_anomali2.png","isNVOnly":false,"hitbox":{"top":"15.75%","left":"8.25%","width":"28.40%","height":"47.36%"}},
+            {"id":"r3_a3","roomId":3,"imageSrc":"image/ruang3_anomali3.png","isNVOnly":false,"hitbox":{"top":"56.24%","left":"46.61%","width":"22.68%","height":"34.60%"}},
+            {"id":"r3_a9","roomId":3,"imageSrc":"image/ruang3_anomali9.jpe.png","isNVOnly":true,"hitbox":{"top":"52.31%","left":"15.64%","width":"24.70%","height":"34.35%"}},
+            {"id":"r3_a10","roomId":3,"imageSrc":"image/ruang3_anomali10.jpe.png","isNVOnly":true,"hitbox":{"top":"33.17%","left":"74.63%","width":"17.51%","height":"28.22%"}},
+            {"id":"r4_a1","roomId":4,"imageSrc":"image/ruang4_anomali1.jpe.png","isNVOnly":false,"hitbox":{"top":"9.62%","left":"77.21%","width":"22.12%","height":"21.35%"}},
+            {"id":"r4_a2","roomId":4,"imageSrc":"image/ruang4_anomali2.jpe.png","isNVOnly":false,"hitbox":{"top":"57.71%","left":"20.25%","width":"19.72%","height":"41.47%"}},
+            {"id":"r4_a3","roomId":4,"imageSrc":"image/ruang4_anomali3.jpe.png","isNVOnly":false,"hitbox":{"top":"45.20%","left":"48.82%","width":"17.14%","height":"30.67%"}},
+            {"id":"r4_a4","roomId":4,"imageSrc":"image/ruang4_anomali4.png","isNVOnly":false,"hitbox":{"top":"59.18%","left":"32.07%","width":"10.68%","height":"12.51%"}},
+            {"id":"r4_a5","roomId":4,"imageSrc":"image/ruang4_anomali5.png","isNVOnly":false,"hitbox":{"top":"16.49%","left":"82.75%","width":"10.14%","height":"15.46%"}},
+            {"id":"r4_a6","roomId":4,"imageSrc":"image/ruang4_anomali6.jpe.png","isNVOnly":false,"hitbox":{"top":"15.02%","left":"36.30%","width":"31.49%","height":"67.23%"}},
+            {"id":"r4_a9","roomId":4,"imageSrc":"image/ruang4_anomali9.jpe.png","isNVOnly":true,"hitbox":{"top":"1.76%","left":"1.27%","width":"96.93%","height":"95.94%"}},
+            {"id":"r6_a1","roomId":6,"imageSrc":"image/ruang6_anomali1.jpe.png","isNVOnly":false,"hitbox":{"top":"43.72%","left":"52.69%","width":"16.04%","height":"16.69%"}},
+            {"id":"r6_a2","roomId":6,"imageSrc":"image/ruang6_anomali2.jpe.png","isNVOnly":false,"hitbox":{"top":"26.79%","left":"4.94%","width":"12.72%","height":"16.44%"}},
+            {"id":"r6_a3","roomId":6,"imageSrc":"image/ruang6_anomali3.png","isNVOnly":false,"hitbox":{"top":"60.66%","left":"37.57%","width":"32.64%","height":"31.90%"}},
+            {"id":"r6_a4","roomId":6,"imageSrc":"image/ruang6_anomali4.jpe.png","isNVOnly":false,"hitbox":{"top":"10.00%","left":"10.00%","width":"80.00%","height":"80.00%"}},
+            {"id":"r6_a5","roomId":6,"imageSrc":"image/ruang6_anomali5.png","isNVOnly":false,"hitbox":{"top":"46.67%","left":"35.35%","width":"38.93%","height":"35.58%"}},
+            {"id":"r7_a1","roomId":7,"imageSrc":"image/ruang7_anomali1.jpe.png","isNVOnly":false,"hitbox":{"top":"35.23%","left":"56.26%","width":"28.91%","height":"28.78%"}},
+            {"id":"r7_a2","roomId":7,"imageSrc":"image/ruang7_anomali2.png","isNVOnly":false,"hitbox":{"top":"22.00%","left":"39.33%","width":"8.37%","height":"16.39%"}},
+            {"id":"r7_a9","roomId":7,"imageSrc":"image/ruang7_anomali9.jpe.png","isNVOnly":true,"hitbox":{"top":"20.63%","left":"3.06%","width":"42.95%","height":"58.79%"}}
         ];
 
         // State Variables
@@ -461,6 +453,7 @@
         let gameActive = false;
         let isReporting = false;
         let isDangerShowing = false;
+        let hasWarnedTooMany = false; // Prevents repeating warnings
         let dangerTimeout = null;
         let totalGameMs = 0;
         let lastInGameHour = 0;
@@ -487,19 +480,7 @@
 
         const ASSETS_TO_PRELOAD = [
             ...ROOMS.map(r => r.normalImg),
-            ...ANOMALY_POOL.map(a => a.imageSrc),
-            'sounds/Mechanic/Bell.mp3',
-            'sounds/Mechanic/NV_ON.mp3',
-            'sounds/Mechanic/NV_OFF.mp3',
-            'sounds/Mechanic/Report.mp3',
-            'sounds/Mechanic/Typing.mp3',
-            'sounds/Sound_effect/Door_Open.mp3',
-            'sounds/Sound_effect/Door_Slam.mp3',
-            'sounds/Sound_effect/Footstep.mp3',
-            'sounds/Sound_effect/Knock.mp3',
-            'sounds/Sound_effect/Object_Drop.mp3',
-            'sounds/Sound_effect/Running_Footstep.mp3',
-            'sounds/Sound_effect/Slide.mp3'
+            ...ANOMALY_POOL.map(a => a.imageSrc)
         ];
 
         function preloadAssets(onComplete) {
@@ -509,18 +490,10 @@
             const loadingText = document.getElementById('loading-text');
 
             ASSETS_TO_PRELOAD.forEach(url => {
-                const isAudio = url.endsWith('.mp3') || url.endsWith('.wav');
-                if (isAudio) {
-                    const audio = new Audio();
-                    audio.src = url;
-                    audio.oncanplaythrough = () => handleLoad();
-                    audio.onerror = () => handleLoad();
-                } else {
-                    const img = new Image();
-                    img.src = url;
-                    img.onload = () => handleLoad();
-                    img.onerror = () => handleLoad();
-                }
+                const img = new Image();
+                img.src = url;
+                img.onload = () => handleLoad();
+                img.onerror = () => handleLoad();
             });
 
             function handleLoad() {
@@ -530,9 +503,7 @@
                 loadingText.innerText = percent + "%";
 
                 if (loadedCount >= total) {
-                    setTimeout(() => {
-                        if (onComplete) onComplete();
-                    }, 400);
+                    setTimeout(() => { if (onComplete) onComplete(); }, 400);
                 }
             }
         }
@@ -643,7 +614,7 @@
             devBoxDraw.style.top = `${height < 0 ? currentY : startY}px`;
         });
 
-        window.addEventListener('mouseup', (e) => {
+        window.addEventListener('mouseup', () => {
             if (!isDrawing) return;
             isDrawing = false;
 
@@ -689,7 +660,7 @@
         }
 
         function startTutorialText() {
-            const text = `SYSTEM PROTOCOL:\n\n1. MONITOR CAM 01 TO CAM 07.\n2. SURVIVE FROM 12:00:00 AM TO 06:00:00 AM.\n3. PRESS 'W' TO TOGGLE NIGHT VISION.\n4. SOME ANOMALIES ARE ONLY VISIBLE & REPORTABLE VIA NIGHT VISION.\n5. HOLD LEFT CLICK INSIDE ANOMALY AREA TO REPORT.\n6. MAXIMUM ALLOWED STRIKES: ${maxStrikes}.\n\nGOOD LUCK.`;
+            const text = `SYSTEM PROTOCOL:\n\n1. MONITOR CAMERAS.\n2. SURVIVE FROM 12:00:00 AM TO 06:00:00 AM.\n3. PRESS 'W' TO TOGGLE NIGHT VISION.\n4. HOLD LEFT CLICK INSIDE ANOMALY AREA TO REPORT.\n5. MAXIMUM ALLOWED STRIKES: ${maxStrikes}.\n\nGOOD LUCK.`;
             audioManager.typeWriter(document.getElementById('typewriter-text'), text, 20, () => {
                 document.getElementById('btn-start-game').style.display = 'inline-block';
             });
@@ -699,6 +670,7 @@
             document.getElementById('screen-tutorial').style.display = 'none';
             gameActive = true;
             isWitchHourNotified = false;
+            hasWarnedTooMany = false;
             recentAnomalyIds = [];
             brokenCamRoomIds = [];
             statsCleared = [];
@@ -713,12 +685,13 @@
             
             audioManager.startAmbience(120000);
             
+            // Jeda Awal 25 Detik Sebelum Anomali Pertama Terjadi
             setTimeout(() => {
                 if (gameActive) {
                     spawnAnomaly(); 
                     scheduleNextAnomaly();
                 }
-            }, 10000);
+            }, 25000);
         });
 
         function updateCameraView() {
@@ -726,7 +699,7 @@
             camNameDisplay.innerText = room.name;
 
             if (brokenCamRoomIds.includes(room.id)) {
-                viewport.src = "data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='800' height='450'><rect width='800' height='450' fill='black'/><text x='50%' y='50%' fill='red' font-family='monospace' font-size='20' dominant-baseline='middle' text-anchor='middle'>[ SIGNAL LOST - CAMERA OFFLINE ]</text></svg>";
+                viewport.src = "data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='800' height='450'><rect width='800' height='450' fill='black'/><text x='50%' y='50%' fill='red' font-family='monospace' font-size='16' dominant-baseline='middle' text-anchor='middle'>[ SIGNAL LOST - CAMERA OFFLINE ]</text></svg>";
                 hitbox.style.display = 'none';
                 viewport.style.filter = "none";
                 return;
@@ -764,8 +737,9 @@
 
         function checkDangerStatus() {
             if (activeAnomalies.length >= 3) {
-                if (!isDangerShowing) {
+                if (!isDangerShowing && !hasWarnedTooMany) {
                     isDangerShowing = true;
+                    hasWarnedTooMany = true; // Kunci agar peringatan tidak mengulang terus
                     dangerWarning.style.display = 'block';
                     const warningMsg = "Too-much-anomalies!! You-were-in-danger";
                     audioManager.typeWriter(dangerText, warningMsg, 40);
@@ -779,6 +753,7 @@
                     }, duration);
                 }
             } else {
+                hasWarnedTooMany = false; // Reset status kunci jika anomali sudah berkurang
                 if (isDangerShowing) {
                     clearTimeout(dangerTimeout);
                     isDangerShowing = false;
@@ -905,7 +880,8 @@
         function spawnAnomaly() {
             if (!gameActive) return;
 
-            if (Math.random() < 0.20 && brokenCamRoomIds.length < 2) {
+            // Rare Event Broken Camera (Chance Diturunkan Jadi Event Langka)
+            if (Math.random() < 0.08 && brokenCamRoomIds.length < 2) {
                 let currentRoomId = ROOMS[currentRoomIndex].id;
                 let candidateRooms = ROOMS.filter(r => r.id !== currentRoomId && !brokenCamRoomIds.includes(r.id));
                 if (candidateRooms.length > 0) {
