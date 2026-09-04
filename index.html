@@ -418,7 +418,6 @@
             { "id": "r1_a3", "roomId": 1, "imageSrc": "image/ruang1_anomali3.png", "isNVOnly": false, "hitbox": { "top": "59.67%", "left": "81.63%", "width": "8.85%", "height": "12.51%" } },
             { "id": "r1_a4", "roomId": 1, "imageSrc": "image/ruang1_anomali4.png", "isNVOnly": false, "hitbox": { "top": "30.23%", "left": "69.83%", "width": "13.09%", "height": "8.34%" } },
             { "id": "r1_a5", "roomId": 1, "imageSrc": "image/ruang1_anomali5.png", "isNVOnly": false, "hitbox": { "top": "34.40%", "left": "8.63%", "width": "25.44%", "height": "44.90%" } },
-            { "id": "r1_a6", "roomId": 1, "imageSrc": "image/ruang1_anomali6.png", "isNVOnly": false, "hitbox": { "top": "51.33%", "left": "64.30%", "width": "8.11%", "height": "8.59%" } },
             { "id": "r1_a7", "roomId": 1, "imageSrc": "image/ruang1_anomali7.png", "isNVOnly": false, "hitbox": { "top": "55.26%", "left": "27.80%", "width": "61.20%", "height": "45.14%" } },
             { "id": "r1_a8", "roomId": 1, "imageSrc": "image/ruang1_anomali8.png", "isNVOnly": false, "hitbox": { "top": "43.23%", "left": "42.55%", "width": "8.48%", "height": "15.95%" } },
             { "id": "r1_a9", "roomId": 1, "imageSrc": "image/ruang1_anomali9.png", "isNVOnly": true,  "hitbox": { "top": "20.66%", "left": "59.88%", "width": "40.19%", "height": "79.25%" } },
@@ -766,9 +765,10 @@
         }
 
         // PERINGATAN ANOMALI HANYA MUNCUL 1 KALI
-        function checkDangerStatus() {
+                function checkDangerStatus() {
+            // Jika anomali mencapai 3 atau lebih DAN peringatan belum dipicu untuk sesi ini
             if (activeAnomalies.length >= 3 && !hasDangerBeenWarned) {
-                hasDangerBeenWarned = true;
+                hasDangerBeenWarned = true; // Kunci agar tidak berulang saat ganti kamera
                 dangerWarning.style.display = 'block';
                 const warningMsg = "Too-much-anomalies!! You-were-in-danger";
                 
@@ -778,6 +778,10 @@
                         dangerText.innerText = "";
                     }, 3000);
                 });
+            } 
+            // Jika jumlah anomali berkurang di bawah 3, reset status agar bisa muncul lagi nanti saat naik ke 3 lagi
+            else if (activeAnomalies.length < 3) {
+                hasDangerBeenWarned = false;
             }
         }
 
@@ -1069,6 +1073,7 @@
                 setTimeout(() => {
                     audioManager.stopReportSound();
                     activeAnomalies.splice(anomalyIndex, 1);
+                    checkDangerStatus();
                     strikes = 0;
                     strikeDisplay.innerText = `0/${maxStrikes}`;
                     updateCameraView();
