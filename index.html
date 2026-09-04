@@ -21,14 +21,23 @@
             display: flex; 
             justify-content: center; 
             align-items: center; 
-            max-width: 95vw; 
-            max-height: 90vh; 
+            /* Force a fixed 16:9 aspect ratio and enlarge the container */
+            width: 90vw; 
+            aspect-ratio: 16 / 9;
+            max-height: 85vh;
+            background: #000;
+            border: 3px solid #00ff00;
+            box-shadow: 0 0 20px rgba(0, 255, 0, 0.2);
         }
+
         #viewport {
-            max-width: 95vw; max-height: 90vh; width: auto; height: auto;
-            object-fit: contain; display: block; border: 2px solid #222; box-shadow: 0 0 15px rgba(0,0,0,0.9);
+            width: 100%;
+            height: 100%;
+            /* Fits the complete image inside the 16:9 frame without changing ratio or cropping */
+            object-fit: contain; 
+            display: block;
             cursor: default;
-        }
+         }
         .overlay-screen {
             position: absolute; top: 0; left: 0; width: 100%; height: 100%;
             background: #050505; z-index: 100; display: flex; flex-direction: column;
