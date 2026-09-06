@@ -87,12 +87,6 @@
             position: absolute; display: none; cursor: default; 
             z-index: 10; border: none; background: transparent; 
         }
-        /* Style pembantu debug hitbox in-game */
-        #hitbox.debug-visible {
-            border: 2px dashed #ff0000 !important;
-            background: rgba(255, 0, 0, 0.35) !important;
-        }
-
         #progress-ring { position: absolute; pointer-events: none; display: none; transform: translate(-50%, -50%); z-index: 30; }
 
         #report-screen {
@@ -124,9 +118,10 @@
             border: 2px solid #00ffff; padding: 15px; z-index: 100; display: none; flex-direction: column;
             align-items: center; box-shadow: 0 0 10px #00ffff;
         }
-        .reboot-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 5px; margin-top: 10px; }
+        .reboot-grid { display: grid; grid-template-columns: repeat(5, 1fr); gap: 5px; margin-top: 10px; }
         .reboot-btn { font-size: 8px; padding: 8px; border-color: #00ffff; color: #00ffff; }
 
+        /* STYLES DEV MODE */
         #screen-dev {
             position: absolute; top: 0; left: 0; width: 100%; height: 100%;
             background: #080808; color: #00ffff; display: none; flex-direction: column;
@@ -137,9 +132,26 @@
             display: flex; justify-content: space-between; align-items: center; font-size: 9px;
         }
         #dev-canvas-area {
-            position: relative; display: inline-block; border: 2px solid #00ffff; cursor: crosshair; user-select: none;
+            position: relative;
+            width: 75vw;
+            aspect-ratio: 16 / 9;
+            max-height: 55vh;
+            border: 2px solid #00ffff;
+            cursor: crosshair;
+            user-select: none;
+            background: #000;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            overflow: hidden;
         }
-        #dev-img { max-width: 75vw; max-height: 55vh; display: block; pointer-events: none; }
+        #dev-img {
+            width: 100%;
+            height: 100%;
+            object-fit: contain;
+            display: block;
+            pointer-events: none;
+        }
         #dev-box-draw {
             position: absolute; border: 2px dashed #ff00ff; background: rgba(255, 0, 255, 0.3); pointer-events: none; display: none; z-index: 15;
         }
@@ -150,14 +162,6 @@
         #dev-output {
             margin-top: 5px; width: 95%; height: 70px; background: #000; color: #00ff00;
             border: 1px solid #00ffff; font-size: 8px; padding: 5px; overflow-y: auto; white-space: pre-wrap;
-        }
-
-        /* HUD Dev In-Game Panel Testing */
-        #dev-game-tester {
-            position: absolute; top: 75px; right: 20px; z-index: 80;
-            background: rgba(0, 20, 20, 0.9); border: 2px solid #00ffff;
-            padding: 10px; font-size: 8px; display: none; flex-direction: column; gap: 6px;
-            box-shadow: 0 0 10px #00ffff; max-width: 280px;
         }
 
         #shift-report-screen {
@@ -178,6 +182,73 @@
         .report-list li { margin-bottom: 4px; }
         .text-ghostly { color: #00ffff; }
         .text-missed { color: #ff3333; }
+
+        /* STYLES OVERLAY JUMPSCARE */
+        #jumpscare-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100vw;
+            height: 100vh;
+            background-color: #000000;
+            z-index: 99999;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            overflow: hidden;
+        }
+
+        .jumpscare-hidden {
+            display: none !important;
+        }
+
+        .jumpscare-glitch-container {
+            position: relative;
+            width: 100%;
+            height: 100%;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+        }
+
+        #jumpscare-img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            filter: brightness(0.4) contrast(2) grayscale(0.2);
+            animation: jumpscareShake 0.08s infinite alternate;
+        }
+
+        .glitch-noise {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: repeating-linear-gradient(
+                0deg,
+                rgba(0, 0, 0, 0.3),
+                rgba(0, 0, 0, 0.3) 1px,
+                transparent 1px,
+                transparent 2px
+            );
+            pointer-events: none;
+            animation: glitchFlicker 0.1s infinite;
+        }
+
+        @keyframes jumpscareShake {
+            0% { transform: scale(1.1) translate(10px, -5px); }
+            25% { transform: scale(1.15) translate(-8px, 10px); }
+            50% { transform: scale(1.08) translate(-12px, -8px); filter: brightness(0.25) contrast(2.5); }
+            75% { transform: scale(1.12) translate(15px, 5px); }
+            100% { transform: scale(1.1) translate(-5px, -10px); }
+        }
+
+        @keyframes glitchFlicker {
+            0% { opacity: 0.8; }
+            50% { opacity: 0.2; }
+            100% { opacity: 0.9; }
+        }
     </style>
 </head>
 <body>
@@ -236,16 +307,6 @@
             <div style="font-size: 8px; margin-top: 5px; color: #aaa;">STRIKES: <span id="strike-count" style="color: #ff0000;">0/5</span></div>
         </div>
 
-        <!-- PANEL DEV IN-GAME TESTER -->
-        <div id="dev-game-tester">
-            <div style="color:#00ffff; border-bottom:1px solid #00ffff; padding-bottom:3px; text-align:center;">IN-GAME HITBOX TESTER</div>
-            <button class="btn-pixel" style="font-size:7px; padding:4px;" onclick="toggleDebugHitbox()">TOGGLE SHOW HITBOX</button>
-            <div style="font-size:7px; margin-top:3px;">FORCE SPAWN:</div>
-            <select id="test-spawn-select" style="background:#000; color:#00ffff; font-size:7px; font-family:'Press Start 2P'; padding:2px;"></select>
-            <button class="btn-pixel" style="font-size:7px; padding:4px;" onclick="forceSpawnSelected()">SPAWN HERE</button>
-            <button class="btn-pixel btn-danger" style="font-size:7px; padding:4px;" onclick="showShiftReport('MANUAL TEST REPORT')">TEST SHIFT REPORT</button>
-        </div>
-
         <div id="viewport-wrapper">
             <img id="viewport" src="" alt="CCTV View">
             <div id="hitbox"></div>
@@ -272,6 +333,9 @@
                 <button class="btn-pixel reboot-btn" onclick="executeReboot(5)">CAM 5</button>
                 <button class="btn-pixel reboot-btn" onclick="executeReboot(6)">CAM 6</button>
                 <button class="btn-pixel reboot-btn" onclick="executeReboot(7)">CAM 7</button>
+                <button class="btn-pixel reboot-btn" onclick="executeReboot(8)">CAM 8</button>
+                <button class="btn-pixel reboot-btn" onclick="executeReboot(9)">CAM 9</button>
+                <button class="btn-pixel reboot-btn" onclick="executeReboot(10)">CAM 10</button>
             </div>
             <button class="btn-pixel btn-danger" onclick="toggleRebootModal()" style="font-size: 6px; padding: 5px; margin-top: 10px;">CANCEL</button>
         </div>
@@ -329,6 +393,14 @@
         </div>
     </div>
 
+    <!-- ELEMEN OVERLAY JUMPSCARE -->
+    <div id="jumpscare-overlay" class="jumpscare-hidden">
+        <div class="jumpscare-glitch-container">
+            <img id="jumpscare-img" src="image/jumpscare.png" alt="Jumpscare">
+            <div class="glitch-noise"></div>
+        </div>
+    </div>
+
     <script>
         class AudioManager {
             constructor() {
@@ -342,6 +414,9 @@
 
                 this.mechanics.report.volume = 0.33;
                 this.mechanics.bell.volume = 0.50;
+
+                this.sfxJumpscare = new Audio('sounds/Sound_effect/Jumpscare.mp3');
+                this.sfxJumpscare.volume = 1.0;
 
                 this.soundEffects = [
                     'sounds/Sound_effect/Door_Open.mp3',
@@ -377,6 +452,16 @@
             stopReportSound() {
                 this.mechanics.report.pause();
                 this.mechanics.report.currentTime = 0;
+            }
+
+            playJumpscareSound() {
+                this.sfxJumpscare.currentTime = 0;
+                this.sfxJumpscare.play().catch(e => console.log(e));
+            }
+
+            stopJumpscareSound() {
+                this.sfxJumpscare.pause();
+                this.sfxJumpscare.currentTime = 0;
             }
 
             typeWriter(element, text, speed = 20, onComplete = null) {
@@ -432,47 +517,605 @@
             { id: 4, name: "CAM 04 - KITCHEN", normalImg: "image/ruang4_normal.png" },
             { id: 5, name: "CAM 05 - BEDROOM 1", normalImg: "image/ruang5_normal.png" },
             { id: 6, name: "CAM 06 - WORKSPACE", normalImg: "image/ruang6_normal.png" },
-            { id: 7, name: "CAM 07 - BEDROOM 2", normalImg: "image/ruang7_normal.png" }
+            { id: 7, name: "CAM 07 - BEDROOM 2", normalImg: "image/ruang7_normal.png" },
+            { id: 8, name: "CAM 08 - TERAS", normalImg: "image/ruang8_normal.png" },
+            { id: 9, name: "CAM 09 - GARASI", normalImg: "image/ruang9_normal.png" },
+            { id: 10, name: "CAM 10 - BEDROOM 3", normalImg: "image/ruang10_normal.png" }
         ];
 
+        // POOL ANOMALI LENGKAP DENGAN HITBOX DAN SETTING JUMPSCARE KHUSUS
         const ANOMALY_POOL = [
-            {"id": "r1_a1", "roomId": 1, "imageSrc": "image/ruang1_anomali1.png", "isNVOnly": false, "hitbox": {"top": "3.48%", "left": "9.92%", "width": "44.06%", "height": "28.46%"}},
-            {"id": "r1_a2", "roomId": 1, "imageSrc": "image/ruang1_anomali2.png", "isNVOnly": false, "hitbox": {"top": "41.52%", "left": "30.57%", "width": "12.35%", "height": "30.18%"}},
-            {"id": "r1_a3", "roomId": 1, "imageSrc": "image/ruang1_anomali3.png", "isNVOnly": false, "hitbox": {"top": "57.96%", "left": "80.35%", "width": "11.06%", "height": "17.42%"}},
-            {"id": "r1_a4", "roomId": 1, "imageSrc": "image/ruang1_anomali4.png", "isNVOnly": false, "hitbox": {"top": "30.23%", "left": "69.83%", "width": "13.09%", "height": "8.34%"}},
-            {"id": "r1_a5", "roomId": 1, "imageSrc": "image/ruang1_anomali5.png", "isNVOnly": false, "hitbox": {"top": "34.40%", "left": "8.63%", "width": "25.44%", "height": "44.90%"}},
-            {"id": "r1_a7", "roomId": 1, "imageSrc": "image/ruang1_anomali7.png", "isNVOnly": false, "hitbox": {"top": "55.26%", "left": "27.80%", "width": "61.20%", "height": "45.14%"}},
-            {"id": "r1_a8", "roomId": 1, "imageSrc": "image/ruang1_anomali8.png", "isNVOnly": false, "hitbox": {"top": "43.23%", "left": "42.55%", "width": "8.48%", "height": "15.95%"}},
-            {"id": "r1_a9", "roomId": 1, "imageSrc": "image/ruang1_anomali9.png", "isNVOnly": true,  "hitbox": {"top": "20.66%", "left": "59.88%", "width": "40.19%", "height": "79.25%"}},
-            {"id": "r2_a1", "roomId": 2, "imageSrc": "image/ruang2_anomali1.png", "isNVOnly": false, "hitbox": {"top": "30.72%", "left": "58.77%", "width": "15.48%", "height": "51.53%"}},
-            {"id": "r2_a2", "roomId": 2, "imageSrc": "image/ruang2_anomali2.png", "isNVOnly": false, "hitbox": {"top": "66.05%", "left": "10.84%", "width": "27.84%", "height": "34.34%"}},
-            {"id": "r2_a3", "roomId": 2, "imageSrc": "image/ruang2_anomali3.png", "isNVOnly": false, "hitbox": {"top": "90.84%", "left": "33.33%", "width": "28.39%", "height": "9.56%"}},
-            {"id": "r2_a4", "roomId": 2, "imageSrc": "image/ruang2_anomali4.png", "isNVOnly": false, "hitbox": {"top": "0.78%", "left": "0.34%", "width": "98.81%", "height": "18.65%"}},
-            {"id": "r2_a5", "roomId": 2, "imageSrc": "image/ruang2_anomali5.png", "isNVOnly": false, "hitbox": {"top": "26.79%", "left": "58.22%", "width": "28.95%", "height": "57.91%"}},
-            {"id": "r2_a6", "roomId": 2, "imageSrc": "image/ruang2_anomali6.png", "isNVOnly": false, "hitbox": {"top": "67.28%", "left": "8.45%", "width": "16.04%", "height": "12.51%"}},
-            {"id": "r2_a7", "roomId": 2, "imageSrc": "image/ruang2_anomali7.png", "isNVOnly": false, "hitbox": {"top": "1.76%", "left": "0.32%", "width": "51.45%", "height": "91.28%"}},
-            {"id": "r2_a9", "roomId": 2, "imageSrc": "image/ruang2_anomali9.png", "isNVOnly": true,  "hitbox": {"top": "37.10%", "left": "21.90%", "width": "21.75%", "height": "57.91%"}},
-            {"id": "r3_a1", "roomId": 3, "imageSrc": "image/ruang3_anomali1.png", "isNVOnly": false, "hitbox": {"top": "54.28%", "left": "69.28%", "width": "9.03%", "height": "12.76%"}},
-            {"id": "r3_a2", "roomId": 3, "imageSrc": "image/ruang3_anomali2.png", "isNVOnly": false, "hitbox": {"top": "15.75%", "left": "8.25%", "width": "28.40%", "height": "47.36%"}},
-            {"id": "r3_a3", "roomId": 3, "imageSrc": "image/ruang3_anomali3.png", "isNVOnly": false, "hitbox": {"top": "56.24%", "left": "46.61%", "width": "22.68%", "height": "34.60%"}},
-            {"id": "r3_a9", "roomId": 3, "imageSrc": "image/ruang3_anomali9.png", "isNVOnly": true,  "hitbox": {"top": "52.31%", "left": "15.64%", "width": "24.70%", "height": "34.35%"}},
-            {"id": "r3_a10","roomId": 3, "imageSrc": "image/ruang3_anomali10.png","isNVOnly": true,  "hitbox": {"top": "33.17%", "left": "74.63%", "width": "17.51%", "height": "28.22%"}},
-            {"id": "r4_a1", "roomId": 4, "imageSrc": "image/ruang4_anomali1.png", "isNVOnly": false, "hitbox": {"top": "9.62%", "left": "77.21%", "width": "22.12%", "height": "21.35%"}},
-            {"id": "r4_a2", "roomId": 4, "imageSrc": "image/ruang4_anomali2.png", "isNVOnly": false, "hitbox": {"top": "57.71%", "left": "20.25%", "width": "19.72%", "height": "41.47%"}},
-            {"id": "r4_a3", "roomId": 4, "imageSrc": "image/ruang4_anomali3.png", "isNVOnly": false, "hitbox": {"top": "45.20%", "left": "48.82%", "width": "17.14%", "height": "30.67%"}},
-            {"id": "r4_a4", "roomId": 4, "imageSrc": "image/ruang4_anomali4.png", "isNVOnly": false, "hitbox": {"top": "60.41%", "left": "30.60%", "width": "11.78%", "height": "14.23%"}},
-            {"id": "r4_a5", "roomId": 4, "imageSrc": "image/ruang4_anomali5.png", "isNVOnly": false, "hitbox": {"top": "16.00%", "left": "80.90%", "width": "12.54%", "height": "18.40%"}},
-            {"id": "r4_a6", "roomId": 4, "imageSrc": "image/ruang4_anomali6.png", "isNVOnly": false, "hitbox": {"top": "9.62%", "left": "38.51%", "width": "29.47%", "height": "80.73%"}},
-            {"id": "r4_a9", "roomId": 4, "imageSrc": "image/ruang4_anomali9.png", "isNVOnly": true,  "hitbox": {"top": "2.75%", "left": "1.83%", "width": "97.12%", "height": "95.69%"}},
-            {"id": "r6_a1", "roomId": 6, "imageSrc": "image/ruang6_anomali1.png", "isNVOnly": false, "hitbox": {"top": "43.72%", "left": "52.69%", "width": "16.04%", "height": "16.69%"}},
-            {"id": "r6_a2", "roomId": 6, "imageSrc": "image/ruang6_anomali2.png", "isNVOnly": false, "hitbox": {"top": "26.79%", "left": "4.94%", "width": "12.72%", "height": "16.44%"}},
-            {"id": "r6_a3", "roomId": 6, "imageSrc": "image/ruang6_anomali3.png", "isNVOnly": false, "hitbox": {"top": "60.66%", "left": "37.57%", "width": "32.64%", "height": "31.90%"}},
-            {"id": "r6_a4", "roomId": 6, "imageSrc": "image/ruang6_anomali4.png", "isNVOnly": false, "hitbox": {"top": "42.01%", "left": "64.30%", "width": "23.77%", "height": "57.66%"}},
-            {"id": "r6_a5", "roomId": 6, "imageSrc": "image/ruang6_anomali5.png", "isNVOnly": false, "hitbox": {"top": "38.08%", "left": "35.35%", "width": "38.01%", "height": "49.07%"}},
-            {"id": "r7_a1", "roomId": 7, "imageSrc": "image/ruang7_anomali1.png", "isNVOnly": false, "hitbox": {"top": "31.50%", "left": "58.07%", "width": "27.85%", "height": "34.91%"}},
-            {"id": "r7_a2", "roomId": 7, "imageSrc": "image/ruang7_anomali2.png", "isNVOnly": false, "hitbox": {"top": "19.88%", "left": "39.48%", "width": "9.56%", "height": "18.51%"}},
-            {"id": "r7_a9", "roomId": 7, "imageSrc": "image/ruang7_anomali9.png", "isNVOnly": true,  "hitbox": {"top": "17.16%", "left": "5.02%", "width": "40.38%", "height": "64.94%"}}
-        ];
+    {
+        "id": "r1_a1",
+        "roomId": 1,
+        "imageSrc": "image/ruang1_anomali1.png",
+        "isNVOnly": false,
+        "hitbox": {
+            "top": "4.00%",
+            "left": "30.17%",
+            "width": "21.53%",
+            "height": "29.68%"
+        }
+    },
+    {
+        "id": "r1_a2",
+        "roomId": 1,
+        "imageSrc": "image/ruang1_anomali2.png",
+        "isNVOnly": false,
+        "hitbox": {
+            "top": "40.36%",
+            "left": "41.11%",
+            "width": "6.60%",
+            "height": "35.37%"
+        }
+    },
+    {
+        "id": "r1_a3",
+        "roomId": 1,
+        "imageSrc": "image/ruang1_anomali3.png",
+        "isNVOnly": false,
+        "hitbox": {
+            "top": "58.91%",
+            "left": "64.64%",
+            "width": "4.43%",
+            "height": "14.84%"
+        }
+    },
+    {
+        "id": "r1_a4",
+        "roomId": 1,
+        "imageSrc": "image/ruang1_anomali4.png",
+        "isNVOnly": false,
+        "hitbox": {
+            "top": "31.21%",
+            "left": "57.26%",
+            "width": "10.24%",
+            "height": "10.39%"
+        }
+    },
+    {
+        "id": "r1_a5",
+        "roomId": 1,
+        "imageSrc": "image/ruang1_anomali5.png",
+        "isNVOnly": false,
+        "hitbox": {
+            "top": "31.46%",
+            "left": "29.13%",
+            "width": "14.06%",
+            "height": "51.69%"
+        }
+    },
+    {
+        "id": "r1_a7",
+        "roomId": 1,
+        "imageSrc": "image/ruang1_anomali7.png",
+        "isNVOnly": false,
+        "hitbox": {
+            "top": "55.69%",
+            "left": "37.99%",
+            "width": "31.25%",
+            "height": "44.70%"
+        }
+    },
+    {
+        "id": "r1_a8",
+        "roomId": 1,
+        "imageSrc": "image/ruang1_anomali8.png",
+        "isNVOnly": false,
+        "hitbox": {
+            "top": "43.58%",
+            "left": "47.36%",
+            "width": "3.13%",
+            "height": "16.32%"
+        }
+    },
+    {
+        "id": "r1_a9",
+        "roomId": 1,
+        "imageSrc": "image/ruang1_anomali9.png",
+        "isNVOnly": true,
+        "hitbox": {
+            "top": "21.32%",
+            "left": "52.74%",
+            "width": "21.35%",
+            "height": "79.08%"
+        }
+    },
+    {
+        "id": "r2_a1",
+        "roomId": 2,
+        "imageSrc": "image/ruang2_anomali1.png",
+        "isNVOnly": false,
+        "hitbox": {
+            "top": "29.97%",
+            "left": "53.35%",
+            "width": "8.85%",
+            "height": "54.66%"
+        }
+    },
+    {
+        "id": "r2_a2",
+        "roomId": 2,
+        "imageSrc": "image/ruang2_anomali2.png",
+        "isNVOnly": false,
+        "hitbox": {
+            "top": "65.09%",
+            "left": "27.14%",
+            "width": "17.88%",
+            "height": "35.30%"
+        }
+    },
+    {
+        "id": "r2_a3",
+        "roomId": 2,
+        "imageSrc": "image/ruang2_anomali3.png",
+        "isNVOnly": false,
+        "hitbox": {
+            "top": "90.84%",
+            "left": "33.33%",
+            "width": "28.39%",
+            "height": "9.56%"
+        }
+    },
+    {
+        "id": "r2_a4",
+        "roomId": 2,
+        "imageSrc": "image/ruang2_anomali4.png",
+        "isNVOnly": false,
+        "hitbox": {
+            "top": "0.78%",
+            "left": "0.34%",
+            "width": "98.81%",
+            "height": "18.65%"
+        }
+    },
+    {
+        "id": "r2_a5",
+        "roomId": 2,
+        "imageSrc": "image/ruang2_anomali5.png",
+        "isNVOnly": false,
+        "hitbox": {
+            "top": "25.77%",
+            "left": "52.92%",
+            "width": "14.93%",
+            "height": "59.85%"
+        }
+    },
+    {
+        "id": "r2_a6",
+        "roomId": 2,
+        "imageSrc": "image/ruang2_anomali6.png",
+        "isNVOnly": false,
+        "hitbox": {
+            "top": "67.81%",
+            "left": "30.00%",
+            "width": "8.51%",
+            "height": "14.84%"
+        }
+    },
+    {
+        "id": "r2_a7",
+        "roomId": 2,
+        "imageSrc": "image/ruang2_anomali7.png",
+        "isNVOnly": false,
+        "hitbox": {
+            "top": "1.76%",
+            "left": "0.32%",
+            "width": "51.45%",
+            "height": "91.28%"
+        }
+    },
+    {
+        "id": "r2_a9",
+        "roomId": 2,
+        "imageSrc": "image/ruang2_anomali9.png",
+        "isNVOnly": true,
+        "hitbox": {
+            "top": "36.65%",
+            "left": "36.94%",
+            "width": "9.29%",
+            "height": "52.92%"
+        }
+    },
+    {
+        "id": "r3_a1",
+        "roomId": 3,
+        "imageSrc": "image/ruang3_anomali1.png",
+        "isNVOnly": false,
+        "hitbox": {
+            "top": "53.22%",
+            "left": "58.39%",
+            "width": "5.30%",
+            "height": "13.60%"
+        }
+    },
+    {
+        "id": "r3_a2",
+        "roomId": 3,
+        "imageSrc": "image/ruang3_anomali2.png",
+        "isNVOnly": false,
+        "hitbox": {
+            "top": "16.12%",
+            "left": "29.48%",
+            "width": "14.76%",
+            "height": "52.43%"
+        }
+    },
+    {
+        "id": "r3_a3",
+        "roomId": 3,
+        "imageSrc": "image/ruang3_anomali3.png",
+        "isNVOnly": false,
+        "hitbox": {
+            "top": "54.71%",
+            "left": "46.58%",
+            "width": "12.67%",
+            "height": "35.86%"
+        }
+    },
+    {
+        "id": "r3_a9",
+        "roomId": 3,
+        "imageSrc": "image/ruang3_anomali9.png",
+        "isNVOnly": true,
+        "hitbox": {
+            "top": "52.23%",
+            "left": "32.78%",
+            "width": "13.28%",
+            "height": "38.58%"
+        }
+    },
+    {
+        "id": "r3_a10",
+        "roomId": 3,
+        "imageSrc": "image/ruang3_anomali10.png",
+        "isNVOnly": true,
+        "hitbox": {
+            "top": "32.45%",
+            "left": "59.51%",
+            "width": "9.64%",
+            "height": "31.90%"
+        }
+    },
+    {
+        "id": "r4_a1",
+        "roomId": 4,
+        "imageSrc": "image/ruang4_anomali1.png",
+        "isNVOnly": false,
+        "hitbox": {
+            "top": "9.94%",
+            "left": "62.64%",
+            "width": "10.76%",
+            "height": "21.76%"
+        }
+    },
+    {
+        "id": "r4_a2",
+        "roomId": 4,
+        "imageSrc": "image/ruang4_anomali2.png",
+        "isNVOnly": false,
+        "hitbox": {
+            "top": "58.17%",
+            "left": "35.82%",
+            "width": "8.85%",
+            "height": "37.10%"
+        }
+    },
+    {
+        "id": "r4_a3",
+        "roomId": 4,
+        "imageSrc": "image/ruang4_anomali3.png",
+        "isNVOnly": false,
+        "hitbox": {
+            "top": "45.31%",
+            "left": "48.75%",
+            "width": "7.81%",
+            "height": "31.66%"
+        }
+    },
+    {
+        "id": "r4_a4",
+        "roomId": 4,
+        "imageSrc": "image/ruang4_anomali4.png",
+        "isNVOnly": false,
+        "hitbox": {
+            "top": "60.39%",
+            "left": "41.72%",
+            "width": "3.99%",
+            "height": "12.37%"
+        }
+    },
+    {
+        "id": "r4_a5",
+        "roomId": 4,
+        "imageSrc": "image/ruang4_anomali5.png",
+        "isNVOnly": false,
+        "hitbox": {
+            "top": "17.11%",
+            "left": "64.90%",
+            "width": "4.08%",
+            "height": "15.58%"
+        }
+    },
+    {
+        "id": "r4_a6",
+        "roomId": 4,
+        "imageSrc": "image/ruang4_anomali6.png",
+        "isNVOnly": false,
+        "hitbox": {
+            "top": "11.92%",
+            "left": "42.59%",
+            "width": "16.15%",
+            "height": "73.95%"
+        }
+    },
+    {
+        "id": "r4_a7",
+        "roomId": 4,
+        "imageSrc": "image/ruang4_anomali7.png",
+        "isNVOnly": false,
+        "hitbox": {
+            "top": "39.12%",
+            "left": "33.30%",
+            "width": "5.99%",
+            "height": "24.98%"
+        },
+        "jumpscare": "image/jumpscare.png"
+    },
+    {
+        "id": "r4_a9",
+        "roomId": 4,
+        "imageSrc": "image/ruang4_anomali9.png",
+        "isNVOnly": true,
+        "hitbox": {
+            "top": "2.75%",
+            "left": "1.83%",
+            "width": "97.12%",
+            "height": "95.69%"
+        }
+    },
+    {
+        "id": "r5_a1",
+        "roomId": 5,
+        "imageSrc": "image/ruang5_anomali1.png",
+        "isNVOnly": false,
+        "hitbox": {
+            "top": "9.94%",
+            "left": "18.63%",
+            "width": "59.20%",
+            "height": "70.98%"
+        }
+    },
+    {
+        "id": "r5_a2",
+        "roomId": 5,
+        "imageSrc": "image/ruang5_anomali2.png",
+        "isNVOnly": false,
+        "hitbox": {
+            "top": "26.26%",
+            "left": "37.64%",
+            "width": "13.11%",
+            "height": "49.71%"
+        }
+    },
+    {
+        "id": "r6_a1",
+        "roomId": 6,
+        "imageSrc": "image/ruang6_anomali1.png",
+        "isNVOnly": false,
+        "hitbox": {
+            "top": "45.31%",
+            "left": "51.53%",
+            "width": "7.12%",
+            "height": "14.34%"
+        }
+    },
+    {
+        "id": "r6_a2",
+        "roomId": 6,
+        "imageSrc": "image/ruang6_anomali2.png",
+        "isNVOnly": false,
+        "hitbox": {
+            "top": "28.00%",
+            "left": "29.05%",
+            "width": "5.64%",
+            "height": "14.34%"
+        }
+    },
+    {
+        "id": "r6_a3",
+        "roomId": 6,
+        "imageSrc": "image/ruang6_anomali3.png",
+        "isNVOnly": false,
+        "hitbox": {
+            "top": "58.66%",
+            "left": "43.45%",
+            "width": "15.89%",
+            "height": "33.63%"
+        }
+    },
+    {
+        "id": "r6_a4",
+        "roomId": 6,
+        "imageSrc": "image/ruang6_anomali4.png",
+        "isNVOnly": false,
+        "hitbox": {
+            "top": "42.34%",
+            "left": "57.95%",
+            "width": "10.76%",
+            "height": "54.16%"
+        }
+    },
+    {
+        "id": "r6_a5",
+        "roomId": 6,
+        "imageSrc": "image/ruang6_anomali5.png",
+        "isNVOnly": false,
+        "hitbox": {
+            "top": "38.88%",
+            "left": "42.76%",
+            "width": "17.88%",
+            "height": "46.74%"
+        }
+    },
+    {
+        "id": "r7_a1",
+        "roomId": 7,
+        "imageSrc": "image/ruang7_anomali1.png",
+        "isNVOnly": false,
+        "hitbox": {
+            "top": "33.44%",
+            "left": "54.91%",
+            "width": "16.06%",
+            "height": "28.69%"
+        }
+    },
+    {
+        "id": "r7_a2",
+        "roomId": 7,
+        "imageSrc": "image/ruang7_anomali2.png",
+        "isNVOnly": false,
+        "hitbox": {
+            "top": "22.06%",
+            "left": "44.50%",
+            "width": "3.30%",
+            "height": "13.35%"
+        }
+    },
+    {
+        "id": "r7_a3",
+        "roomId": 7,
+        "imageSrc": "image/ruang7_anomali3.png",
+        "isNVOnly": false,
+        "hitbox": {
+            "top": "15.14%",
+            "left": "37.99%",
+            "width": "7.55%",
+            "height": "30.91%"
+        }
+    },
+    {
+        "id": "r7_a4",
+        "roomId": 7,
+        "imageSrc": "image/ruang7_anomali4.png",
+        "isNVOnly": false,
+        "hitbox": {
+            "top": "6.23%",
+            "left": "43.11%",
+            "width": "11.20%",
+            "height": "50.95%"
+        }
+    },
+    {
+        "id": "r7_a9",
+        "roomId": 7,
+        "imageSrc": "image/ruang7_anomali9.png",
+        "isNVOnly": true,
+        "hitbox": {
+            "top": "17.16%",
+            "left": "5.02%",
+            "width": "40.38%",
+            "height": "64.94%"
+        }
+    },
+    {
+        "id": "r8_a1",
+        "roomId": 8,
+        "imageSrc": "image/ruang8_anomali1.png",
+        "isNVOnly": false,
+        "hitbox": {
+            "top": "58.91%",
+            "left": "42.41%",
+            "width": "9.38%",
+            "height": "25.72%"
+        }
+    },
+    {
+        "id": "r8_a2",
+        "roomId": 8,
+        "imageSrc": "image/ruang8_anomali2.png",
+        "isNVOnly": false,
+        "hitbox": {
+            "top": "51.98%",
+            "left": "69.93%",
+            "width": "8.77%",
+            "height": "43.77%"
+        }
+    },
+    {
+        "id": "r8_a3",
+        "roomId": 8,
+        "imageSrc": "image/ruang8_anomali3.png",
+        "isNVOnly": false,
+        "hitbox": {
+            "top": "45.06%",
+            "left": "36.68%",
+            "width": "5.82%",
+            "height": "25.97%"
+        }
+    },
+    {
+        "id": "r8_a4",
+        "roomId": 8,
+        "imageSrc": "image/ruang8_anomali4.png",
+        "isNVOnly": false,
+        "hitbox": {
+            "top": "68.06%",
+            "left": "28.35%",
+            "width": "26.13%",
+            "height": "32.34%"
+        }
+    },
+    {
+        "id": "r9_a1",
+        "roomId": 9,
+        "imageSrc": "image/ruang9_anomali1.png",
+        "isNVOnly": false,
+        "hitbox": {
+            "top": "35.66%",
+            "left": "43.80%",
+            "width": "6.51%",
+            "height": "16.08%"
+        }
+    },
+    {
+        "id": "r9_a5",
+        "roomId": 9,
+        "imageSrc": "image/ruang9_anomali5.png",
+        "isNVOnly": false,
+        "hitbox": {
+            "top": "19.34%",
+            "left": "32.78%",
+            "width": "20.05%",
+            "height": "81.06%"
+        },
+        "jumpscare": "image/jumpscare.png"
+    },
+    {
+        "id": "r10_a1",
+        "roomId": 10,
+        "imageSrc": "image/ruang10_anomali1.png",
+        "isNVOnly": false,
+        "hitbox": {
+            "top": "44.81%",
+            "left": "46.84%",
+            "width": "8.59%",
+            "height": "34.13%"
+        }
+    },
+    {
+        "id": "r10_a2",
+        "roomId": 10,
+        "imageSrc": "image/ruang10_anomali2.png",
+        "isNVOnly": true,
+        "hitbox": {
+            "top": "11.67%",
+            "left": "19.24%",
+            "width": "62.50%",
+            "height": "27.70%"
+        }
+    }
+];
 
         let gameMode = 'normal';
         let maxStrikes = 5;
@@ -484,7 +1127,6 @@
         let strikes = 0;
         let gameActive = false;
         let isReporting = false;
-        let isDevInGame = false;
         
         let hasDangerBeenWarned = false; 
         let totalGameMs = 0;
@@ -512,11 +1154,13 @@
         const ASSETS_TO_PRELOAD = [
             ...ROOMS.map(r => r.normalImg),
             ...ANOMALY_POOL.map(a => a.imageSrc),
+            'image/jumpscare.png',
             'sounds/Mechanic/Bell.mp3',
             'sounds/Mechanic/NV_ON.mp3',
             'sounds/Mechanic/NV_OFF.mp3',
             'sounds/Mechanic/Report.mp3',
             'sounds/Mechanic/Typing.mp3',
+            'sounds/Sound_effect/Jumpscare.mp3',
             'sounds/Sound_effect/Door_Open.mp3',
             'sounds/Sound_effect/Door_Slam.mp3',
             'sounds/Sound_effect/Footstep.mp3',
@@ -579,39 +1223,11 @@
         function accessDevMode() {
             let pass = prompt("MASUKKAN PASSWORD DEV:");
             if (pass === "frieren") {
-                isDevInGame = true;
-                document.getElementById('dev-game-tester').style.display = 'flex';
-                initDevGameTester();
-                selectDifficulty('normal');
+                document.getElementById('screen-menu').style.display = 'none';
+                document.getElementById('screen-dev').style.display = 'flex';
+                initDevMode();
             } else if (pass !== null) {
                 alert("PASSWORD SALAH!");
-            }
-        }
-
-        function initDevGameTester() {
-            const select = document.getElementById('test-spawn-select');
-            select.innerHTML = "";
-            ANOMALY_POOL.forEach((a) => {
-                let opt = document.createElement('option');
-                opt.value = a.id;
-                opt.innerText = `${a.id} (Ruang ${a.roomId})`;
-                select.appendChild(opt);
-            });
-        }
-
-        function toggleDebugHitbox() {
-            hitbox.classList.toggle('debug-visible');
-        }
-
-        function forceSpawnSelected() {
-            if (!gameActive) return;
-            const selectedId = document.getElementById('test-spawn-select').value;
-            const anomaly = ANOMALY_POOL.find(a => a.id === selectedId);
-            if (anomaly) {
-                activeAnomalies = activeAnomalies.filter(a => a.roomId !== anomaly.roomId);
-                activeAnomalies.push(anomaly);
-                currentRoomIndex = ROOMS.findIndex(r => r.id === anomaly.roomId);
-                updateCameraView();
             }
         }
 
@@ -741,7 +1357,7 @@
         }
 
         function startTutorialText() {
-            const text = `SYSTEM-PROTOCOL:\n\n1. MONITOR-CAM 01-TO-CAM 07.\n2. SURVIVE-FROM-12:00:00 AM-TO-06:00:00 AM.\n3. PRESS-'W'-TO-TOGGLE-NIGHT-VISION.\n4. SOME-ANOMALIES-ARE-ONLY-VISIBLE & REPORTABLE-VIA-NIGHT-VISION.\n5. HOLD-LEFT-CLICK-INSIDE-ANOMALY-AREA-TO-REPORT.\n6. MAXIMUM-ALLOWED-STRIKES: ${maxStrikes}.\n\nGOOD LUCK.`;
+            const text = `SYSTEM-PROTOCOL:\n\n1. MONITOR-CAM 01-TO-CAM 10.\n2. SURVIVE-FROM-12:00:00 AM-TO-06:00:00 AM.\n3. PRESS-'W'-TO-TOGGLE-NIGHT-VISION.\n4. SOME-ANOMALIES-ARE-ONLY-VISIBLE & REPORTABLE-VIA-NIGHT-VISION.\n5. HOLD-LEFT-CLICK-INSIDE-ANOMALY-AREA-TO-REPORT.\n6. MAXIMUM-ALLOWED-STRIKES: ${maxStrikes}.\n\nGOOD LUCK.`;
             audioManager.typeWriter(document.getElementById('typewriter-text'), text, 20, () => {
                 document.getElementById('btn-start-game').style.display = 'inline-block';
             });
@@ -1087,6 +1703,25 @@
             });
         }
 
+        // FUNGSI JUMPSCARE OVERLAY & SFX
+        function triggerJumpscare(imageSrc, onComplete) {
+            const overlay = document.getElementById('jumpscare-overlay');
+            const jumpscareImg = document.getElementById('jumpscare-img');
+            
+            if (imageSrc) {
+                jumpscareImg.src = imageSrc;
+            }
+            
+            overlay.classList.remove('jumpscare-hidden');
+            audioManager.playJumpscareSound();
+
+            setTimeout(() => {
+                overlay.classList.add('jumpscare-hidden');
+                audioManager.stopJumpscareSound();
+                if (onComplete) onComplete();
+            }, 2000);
+        }
+
         function processReport() {
             cancelHold();
             isReporting = true;
@@ -1112,23 +1747,35 @@
                     statsGhostlyCount++;
                 }
 
-                reportScreen.style.display = 'flex';
-                audioManager.startReportSound();
-
-                setTimeout(() => {
-                    audioManager.stopReportSound();
-                    activeAnomalies.splice(anomalyIndex, 1);
-                    checkDangerStatus();
-                    strikes = 0;
-                    strikeDisplay.innerText = `0/${maxStrikes}`;
-                    updateCameraView();
+                const proceedToReportScreen = () => {
+                    reportScreen.style.display = 'flex';
+                    audioManager.startReportSound();
 
                     setTimeout(() => {
-                        reportScreen.style.display = 'none';
-                        isReporting = false;
-                    }, 300);
+                        audioManager.stopReportSound();
+                        activeAnomalies.splice(anomalyIndex, 1);
+                        checkDangerStatus();
+                        strikes = 0;
+                        strikeDisplay.innerText = `0/${maxStrikes}`;
+                        updateCameraView();
 
-                }, 1200);
+                        setTimeout(() => {
+                            reportScreen.style.display = 'none';
+                            isReporting = false;
+                        }, 300);
+
+                    }, 1200);
+                };
+
+                // CEK DAN TRIGER JUMPSCARE APABILA ANOMALI MEMILIKI PROPERTI JUMPSCARE KHUSUS
+                if (anomaly.jumpscare) {
+                    triggerJumpscare(anomaly.jumpscare, () => {
+                        proceedToReportScreen();
+                    });
+                } else {
+                    proceedToReportScreen();
+                }
+
             } else {
                 strikes++;
                 strikeDisplay.innerText = `${strikes}/${maxStrikes}`;
